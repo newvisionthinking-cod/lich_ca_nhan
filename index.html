@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Công Việc & Nhắc Nhở Điện Thoại</title>
+  <title>Lịch Công Việc & Thông Báo Im Lặng</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
     
     header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .header-btns { display: flex; align-items: center; gap: 8px; }
     .btn-top { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .btn-top:hover { background: #334155; }
+    
     .sync-status { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: 700; background: #334155; color: #94a3b8; }
     .sync-active { background: #065f46; color: #a7f3d0; }
     .sync-loading { background: #854d0e; color: #fef08a; }
@@ -24,19 +25,21 @@
     .tab-btn { background: none; border: none; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
     .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
-    /* Date Controller & Quick Result Button */
-    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    /* Top Control Panel */
+    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .date-wrap { display: flex; align-items: center; gap: 8px; }
     .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
     input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
     .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; }
     
-    .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .panel-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn-notif { background: #f0fdf4; border: 1.5px solid #16a34a; color: #15803d; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-notif:hover { background: #16a34a; color: #fff; }
+    .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
     .btn-view-result:hover { background: #2563eb; color: #fff; }
 
-    /* Section Blocks (Sáng / Chiều / Tối) */
-    .session-card { background: #fff; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 22px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-    
+    /* Section Blocks */
+    .session-card { background: #fff; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
     .session-title-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; }
     .session-morning { background: linear-gradient(to right, #eff6ff, #f8fafc); border-left: 6px solid #2563eb; }
     .session-afternoon { background: linear-gradient(to right, #fefce8, #f8fafc); border-left: 6px solid #d97706; }
@@ -45,27 +48,24 @@
     .session-label { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
     .session-sub { font-size: 12px; color: #64748b; font-weight: 700; }
 
-    /* Table Header */
     .table-head { display: none; background: #f1f5f9; padding: 10px 16px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
     @media (min-width: 768px) {
-      .table-head { display: grid; grid-template-columns: 140px 1fr 1fr 130px; gap: 14px; align-items: center; }
+      .table-head { display: grid; grid-template-columns: 130px 1fr 1fr 130px; gap: 14px; align-items: center; }
     }
 
-    /* Gạch phân tách giữa các khung giờ đậm và rõ nét */
     .table-row { padding: 14px 16px; border-bottom: 2px solid #cbd5e1; display: flex; flex-direction: column; gap: 10px; background: #fff; transition: background 0.15s; }
     .table-row:nth-child(even) { background: #fafcff; }
     .table-row:hover { background: #f0f7ff; }
     .table-row:last-child { border-bottom: none; }
     @media (min-width: 768px) {
-      .table-row { display: grid; grid-template-columns: 140px 1fr 1fr 130px; gap: 14px; align-items: start; }
+      .table-row { display: grid; grid-template-columns: 130px 1fr 1fr 130px; gap: 14px; align-items: start; }
     }
 
     .time-wrap { display: flex; flex-direction: column; gap: 6px; }
     .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #e2e8f0; border: 1.5px solid #94a3b8; padding: 6px 10px; border-radius: 6px; width: fit-content; color: #0f172a; }
     
-    /* Nút hẹn giờ chuông báo thức điện thoại */
-    .btn-reminder { background: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; width: fit-content; transition: 0.15s; }
-    .btn-reminder:hover { background: #f59e0b; color: #fff; }
+    .btn-silent-test { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; width: fit-content; }
+    .btn-silent-test:hover { background: #e2e8f0; color: #0f172a; }
 
     .input-col { display: flex; flex-direction: column; gap: 5px; }
     .mobile-lbl { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; }
@@ -130,7 +130,7 @@
 
   <!-- HEADER -->
   <header>
-    <div class="header-title">📊 Lịch Công Việc & Nhắc Nhở</div>
+    <div class="header-title">📊 Lịch Công Việc & Đánh Giá</div>
     <div class="header-btns">
       <span id="syncIndicator" class="sync-status">Đang nạp...</span>
       <button onclick="configSyncUrl()" class="btn-top" title="Cài đặt link kết nối Google Sheets">⚙️ Cài Link Sheets</button>
@@ -147,7 +147,7 @@
 
     <!-- VIEW 1: DAILY -->
     <div id="view-daily">
-      <!-- DATE BAR & VIEW RESULT BUTTON -->
+      <!-- DATE BAR & ACTIONS -->
       <div class="top-panel">
         <div class="date-wrap">
           <button onclick="changeDay(-1)" class="date-btn">◀</button>
@@ -156,12 +156,15 @@
           <span id="dayBadgeText" class="day-badge"></span>
         </div>
 
-        <button onclick="openResultModal()" class="btn-view-result">
-          👁️ Xem kết quả thực hiện
-        </button>
+        <div class="panel-actions">
+          <button onclick="enableSilentNotification()" id="btnNotifToggle" class="btn-notif" title="Bật thông báo im lặng trên màn hình">
+            🔕 Bật thông báo im lặng
+          </button>
+          <button onclick="openResultModal()" class="btn-view-result">
+            👁️ Xem kết quả thực hiện
+          </button>
+        </div>
       </div>
-
-      <!-- PHÂN TÁCH 3 BUỔI CÓ GẠCH VÀ BỐ CỤC RÕ RÀNG -->
 
       <!-- 1. BUỔI SÁNG -->
       <div class="session-card">
@@ -301,26 +304,26 @@
       {
         id: "slotsMorning",
         slots: [
-          { time: "08:00-09:00", start: "08:00", end: "09:00" },
-          { time: "09:00-10:00", start: "09:00", end: "10:00" },
-          { time: "10:00-11:00", start: "10:00", end: "11:00" },
-          { time: "11:00-11:30", start: "11:00", end: "11:30" }
+          { time: "08:00-09:00", hour: 8, min: 0 },
+          { time: "09:00-10:00", hour: 9, min: 0 },
+          { time: "10:00-11:00", hour: 10, min: 0 },
+          { time: "11:00-11:30", hour: 11, min: 0 }
         ]
       },
       {
         id: "slotsAfternoon",
         slots: [
-          { time: "14:00-15:00", start: "14:00", end: "15:00" },
-          { time: "15:00-16:00", start: "15:00", end: "16:00" },
-          { time: "16:00-17:00", start: "16:00", end: "17:00" }
+          { time: "14:00-15:00", hour: 14, min: 0 },
+          { time: "15:00-16:00", hour: 15, min: 0 },
+          { time: "16:00-17:00", hour: 16, min: 0 }
         ]
       },
       {
         id: "slotsEvening",
         slots: [
-          { time: "20:00-21:00", start: "20:00", end: "21:00" },
-          { time: "21:00-22:00", start: "21:00", end: "22:00" },
-          { time: "22:00-23:00", start: "22:00", end: "23:00" }
+          { time: "20:00-21:00", hour: 20, min: 0 },
+          { time: "21:00-22:00", hour: 21, min: 0 },
+          { time: "22:00-23:00", hour: 22, min: 0 }
         ]
       }
     ];
@@ -345,7 +348,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v10";
+    var storageKey = "routine_todo_score_db_v11";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -365,6 +368,99 @@
     var currentDate = getTodayStr();
     var currentFilter = "month";
     var syncTimer = null;
+    var notifiedTodaySlots = {};
+
+    function checkNotifPermission() {
+      var btn = document.getElementById('btnNotifToggle');
+      if (!("Notification" in window)) {
+        btn.innerText = "❌ Không hỗ trợ thông báo";
+        return;
+      }
+      if (Notification.permission === "granted") {
+        btn.innerText = "🔕 Thông báo im lặng: Đang BẬT";
+        btn.style.background = "#dcfce7";
+      } else {
+        btn.innerText = "🔕 Bật thông báo im lặng";
+      }
+    }
+
+    function enableSilentNotification() {
+      if (!("Notification" in window)) {
+        alert("Trình duyệt hiện tại không hỗ trợ Notification API.");
+        return;
+      }
+      Notification.requestPermission().then(function(permission) {
+        checkNotifPermission();
+        if (permission === "granted") {
+          sendSilentNotification("Đã kích hoạt thông báo im lặng!", "Mỗi khung giờ có việc To Do sẽ hiện thông báo im lặng trên màn hình, không chuông, không rung.");
+        }
+      });
+    }
+
+    function sendSilentNotification(title, bodyText) {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      try {
+        new Notification(title, {
+          body: bodyText,
+          silent: true,
+          vibrate: [],
+          requireInteraction: false
+        });
+      } catch(e) {
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            reg.showNotification(title, {
+              body: bodyText,
+              silent: true,
+              vibrate: []
+            });
+          });
+        }
+      }
+    }
+
+    function testSilentNotification(index) {
+      var slotObj = ALL_SLOTS[index];
+      var todoText = document.getElementById('todo-' + index).value.trim();
+      var content = todoText ? todoText : "Khung giờ này chưa có việc To Do";
+      
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission().then(function(p) {
+          if (p === "granted") {
+            sendSilentNotification("🔔 Nhắc việc [" + slotObj.time + "]", content);
+          } else {
+            alert("Vui lòng cấp quyền thông báo để hiển thị trên màn hình!");
+          }
+        });
+      } else {
+        sendSilentNotification("🔔 Nhắc việc [" + slotObj.time + "]", content);
+      }
+    }
+
+    setInterval(function() {
+      if (Notification.permission !== "granted") return;
+      
+      var now = new Date();
+      var curHour = now.getHours();
+      var curMin = now.getMinutes();
+      var todayStr = getTodayStr();
+
+      var daySlots = appData[todayStr];
+      if (!daySlots) return;
+
+      ALL_SLOTS.forEach(function(slotObj, index) {
+        var key = todayStr + "_" + slotObj.time;
+        if (curHour === slotObj.hour && curMin === slotObj.min && !notifiedTodaySlots[key]) {
+          var item = daySlots[slotObj.time];
+          if (item && item.todo && item.todo.trim() !== "") {
+            notifiedTodaySlots[key] = true;
+            sendSilentNotification("📋 Nhắc việc [" + slotObj.time + "]", item.todo);
+          }
+        }
+      });
+    }, 20000);
 
     function setSyncStatus(text, type) {
       var el = document.getElementById('syncIndicator');
@@ -453,7 +549,7 @@
 
           var html = '<div class="time-wrap">';
           html += '<div class="time-col">' + slot + '</div>';
-          html += '<button type="button" onclick="setPhoneReminder(' + index + ')" class="btn-reminder" title="Đặt chuông nhắc nhở qua lịch điện thoại">🔔 Hẹn giờ</button>';
+          html += '<button type="button" onclick="testSilentNotification(' + index + ')" class="btn-silent-test" title="Thử thông báo im lặng lên màn hình">🔕 Thử báo</button>';
           html += '</div>';
 
           // Cột To Do
@@ -501,35 +597,6 @@
     }
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
-
-    // HẸN GIỜ QUA LỊCH ĐIỆN THOẠI (1 CHẠM TỰ BẬT CHUÔNG BÁO THỨC)
-    function setPhoneReminder(index) {
-      var slotObj = ALL_SLOTS[index];
-      var todoText = document.getElementById('todo-' + index).value.trim();
-      if (!todoText) {
-        alert("Vui lòng điền nội dung việc cần làm vào ô 'To Do' trước khi hẹn giờ!");
-        return;
-      }
-
-      var title = "Nhắc việc: " + todoText.split('\n')[0].replace(/^-\s*/, '');
-      var details = "Kế hoạch công việc:\n" + todoText;
-
-      var dateParts = currentDate.split('-');
-      var y = dateParts[0];
-      var m = dateParts[1];
-      var d = dateParts[2];
-      
-      var startH = slotObj.start.replace(':', '') + '00';
-      var endH = slotObj.end.replace(':', '') + '00';
-      var dates = y + m + d + 'T' + startH + '/' + y + m + d + 'T' + endH;
-
-      var googleCalUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
-        "&text=" + encodeURIComponent(title) +
-        "&dates=" + dates +
-        "&details=" + encodeURIComponent(details);
-
-      window.open(googleCalUrl, '_blank');
-    }
 
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
@@ -835,6 +902,7 @@
     window.onload = function() {
       buildSlotsHTML();
       loadDayData();
+      checkNotifPermission();
       syncFromCloud();
     };
   </script>
