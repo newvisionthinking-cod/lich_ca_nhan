@@ -239,7 +239,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v4";
+    var storageKey = "routine_todo_score_db_v5";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -391,11 +391,19 @@
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
+    // Xử lý xuống dòng thật sự và tự động thêm "- " phía trước
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
-      var curVal = document.getElementById('todo-' + index).value.trim();
-      document.getElementById('todo-' + index).value = (curVal === '') ? val : (curVal + "\\n- " + val);
+      var target = document.getElementById('todo-' + index);
+      var curVal = target.value.trim();
+      var formattedItem = "- " + val;
+
+      if (curVal === "") {
+        target.value = formattedItem;
+      } else {
+        target.value = curVal + "\\n" + formattedItem;
+      }
       selectEl.value = "";
       onInputChanged(index);
     }
