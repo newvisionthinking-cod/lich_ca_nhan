@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Công Việc & Thông Báo Im Lặng</title>
+  <title>Lịch Công Việc & Đánh Giá</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
     
     header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
@@ -26,20 +26,24 @@
     .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
     /* Top Control Panel */
-    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .date-wrap { display: flex; align-items: center; gap: 8px; }
     .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
     input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
     .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; }
     
     .panel-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .btn-notif { background: #f0fdf4; border: 1.5px solid #16a34a; color: #15803d; padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-    .btn-notif:hover { background: #16a34a; color: #fff; }
-    .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    
+    /* Nút bật/tắt thông báo im lặng 2 chiều */
+    .btn-notif { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; border: 1.5px solid #cbd5e1; background: #f1f5f9; color: #475569; }
+    .btn-notif-active { background: #dcfce7 !important; border-color: #16a34a !important; color: #15803d !important; }
+
+    .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
     .btn-view-result:hover { background: #2563eb; color: #fff; }
 
-    /* Section Blocks */
-    .session-card { background: #fff; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
+    /* Section Blocks (Sáng, Chiều, Tối) */
+    .session-card { background: #fff; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 22px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    
     .session-title-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; }
     .session-morning { background: linear-gradient(to right, #eff6ff, #f8fafc); border-left: 6px solid #2563eb; }
     .session-afternoon { background: linear-gradient(to right, #fefce8, #f8fafc); border-left: 6px solid #d97706; }
@@ -53,6 +57,7 @@
       .table-head { display: grid; grid-template-columns: 130px 1fr 1fr 130px; gap: 14px; align-items: center; }
     }
 
+    /* Gạch phân tách giữa các khung giờ: Đậm 2px, nền xen kẽ */
     .table-row { padding: 14px 16px; border-bottom: 2px solid #cbd5e1; display: flex; flex-direction: column; gap: 10px; background: #fff; transition: background 0.15s; }
     .table-row:nth-child(even) { background: #fafcff; }
     .table-row:hover { background: #f0f7ff; }
@@ -86,7 +91,7 @@
     .sc-btn.active-05 { background: #ea580c !important; color: #fff !important; border-color: #c2410c !important; }
     .sc-btn.active-0 { background: #dc2626 !important; color: #fff !important; border-color: #b91c1c !important; }
 
-    /* Modal Popup */
+    /* Modal Popup Kết Quả */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
     .modal-box { background: #fff; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
     .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
@@ -157,14 +162,16 @@
         </div>
 
         <div class="panel-actions">
-          <button onclick="enableSilentNotification()" id="btnNotifToggle" class="btn-notif" title="Bật thông báo im lặng trên màn hình">
-            🔕 Bật thông báo im lặng
+          <button onclick="toggleSilentNotification()" id="btnNotifToggle" class="btn-notif" title="Bật hoặc Tắt thông báo im lặng trên màn hình">
+            🔔 Thông báo im lặng: Đang TẮT
           </button>
           <button onclick="openResultModal()" class="btn-view-result">
             👁️ Xem kết quả thực hiện
           </button>
         </div>
       </div>
+
+      <!-- PHÂN TÁCH 3 KHỐI THỜI GIAN RIÊNG BIỆT -->
 
       <!-- 1. BUỔI SÁNG -->
       <div class="session-card">
@@ -300,6 +307,11 @@
   </div>
 
   <script>
+    // Đăng ký Service Worker cho Android Chrome
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function(err) {});
+    }
+
     var SESSIONS = [
       {
         id: "slotsMorning",
@@ -348,7 +360,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v11";
+    var storageKey = "routine_todo_score_db_v12";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -370,54 +382,72 @@
     var syncTimer = null;
     var notifiedTodaySlots = {};
 
-    function checkNotifPermission() {
+    // Biến lưu trạng thái BẬT / TẮT thông báo im lặng
+    var isSilentNotifActive = localStorage.getItem('silent_notif_enabled') === 'true';
+
+    function updateNotifButtonUI() {
       var btn = document.getElementById('btnNotifToggle');
+      if (!btn) return;
+
       if (!("Notification" in window)) {
         btn.innerText = "❌ Không hỗ trợ thông báo";
         return;
       }
-      if (Notification.permission === "granted") {
+
+      if (isSilentNotifActive && Notification.permission === "granted") {
         btn.innerText = "🔕 Thông báo im lặng: Đang BẬT";
-        btn.style.background = "#dcfce7";
+        btn.className = "btn-notif btn-notif-active";
       } else {
-        btn.innerText = "🔕 Bật thông báo im lặng";
+        btn.innerText = "🔔 Thông báo im lặng: Đang TẮT";
+        btn.className = "btn-notif";
       }
     }
 
-    function enableSilentNotification() {
+    function toggleSilentNotification() {
       if (!("Notification" in window)) {
-        alert("Trình duyệt hiện tại không hỗ trợ Notification API.");
+        alert("Trình duyệt không hỗ trợ Web Notification.");
         return;
       }
+
+      // Nếu đang BẬT -> bấm để TẮT
+      if (isSilentNotifActive) {
+        isSilentNotifActive = false;
+        localStorage.setItem('silent_notif_enabled', 'false');
+        updateNotifButtonUI();
+        return;
+      }
+
+      // Nếu đang TẮT -> xin quyền và BẬT
       Notification.requestPermission().then(function(permission) {
-        checkNotifPermission();
         if (permission === "granted") {
-          sendSilentNotification("Đã kích hoạt thông báo im lặng!", "Mỗi khung giờ có việc To Do sẽ hiện thông báo im lặng trên màn hình, không chuông, không rung.");
+          isSilentNotifActive = true;
+          localStorage.setItem('silent_notif_enabled', 'true');
+          updateNotifButtonUI();
+          sendSilentNotification("Đã BẬT thông báo im lặng", "Các khung giờ có việc To Do sẽ tự động hiện lên màn hình.");
+        } else {
+          alert("Bạn chưa cấp quyền thông báo trên trình duyệt!");
         }
       });
     }
 
     function sendSilentNotification(title, bodyText) {
-      if (!("Notification" in window)) return;
-      if (Notification.permission !== "granted") return;
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-      try {
-        new Notification(title, {
-          body: bodyText,
-          silent: true,
-          vibrate: [],
-          requireInteraction: false
+      var options = {
+        body: bodyText,
+        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
+        silent: true,
+        vibrate: []
+      };
+
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.showNotification(title, options);
         });
-      } catch(e) {
-        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-          navigator.serviceWorker.ready.then(function(reg) {
-            reg.showNotification(title, {
-              body: bodyText,
-              silent: true,
-              vibrate: []
-            });
-          });
-        }
+      } else {
+        try {
+          new Notification(title, options);
+        } catch(e) {}
       }
     }
 
@@ -425,13 +455,16 @@
       var slotObj = ALL_SLOTS[index];
       var todoText = document.getElementById('todo-' + index).value.trim();
       var content = todoText ? todoText : "Khung giờ này chưa có việc To Do";
-      
+
       if (Notification.permission !== "granted") {
         Notification.requestPermission().then(function(p) {
           if (p === "granted") {
+            isSilentNotifActive = true;
+            localStorage.setItem('silent_notif_enabled', 'true');
+            updateNotifButtonUI();
             sendSilentNotification("🔔 Nhắc việc [" + slotObj.time + "]", content);
           } else {
-            alert("Vui lòng cấp quyền thông báo để hiển thị trên màn hình!");
+            alert("Vui lòng cho phép quyền thông báo!");
           }
         });
       } else {
@@ -439,9 +472,10 @@
       }
     }
 
+    // Tự động kiểm tra giờ để gửi thông báo im lặng khi BẬT
     setInterval(function() {
-      if (Notification.permission !== "granted") return;
-      
+      if (!isSilentNotifActive || Notification.permission !== "granted") return;
+
       var now = new Date();
       var curHour = now.getHours();
       var curMin = now.getMinutes();
@@ -450,7 +484,7 @@
       var daySlots = appData[todayStr];
       if (!daySlots) return;
 
-      ALL_SLOTS.forEach(function(slotObj, index) {
+      ALL_SLOTS.forEach(function(slotObj) {
         var key = todayStr + "_" + slotObj.time;
         if (curHour === slotObj.hour && curMin === slotObj.min && !notifiedTodaySlots[key]) {
           var item = daySlots[slotObj.time];
@@ -598,6 +632,7 @@
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
+    // XỬ LÝ CHỌN MẪU: Đảm bảo có "- " và xuống dòng thật sự (LF mã 10)
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
@@ -636,6 +671,7 @@
       var daySlots = appData[currentDate] || {};
       ALL_SLOTS.forEach(function(slotObj, index) {
         var slot = slotObj.time;
+        // MẶC ĐỊNH CHẤM LÀ 0.5 ĐIỂM
         var item = daySlots[slot] || { todo: '', actual: '', score: 0.5 };
         var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
         document.getElementById('todo-' + index).value = cleanTodo;
@@ -679,6 +715,7 @@
       saveAppData();
     }
 
+    // MODAL POPUP XEM KẾT QUẢ THỰC HIỆN
     function openResultModal() {
       var daySlots = appData[currentDate] || {};
       var totalScore = 0;
@@ -753,6 +790,7 @@
       }
     }
 
+    // DASHBOARD & PHÂN TÍCH
     function setFilter(f) {
       currentFilter = f;
       document.getElementById('f-month').className = 'filter-btn ' + (f === 'month' ? 'active' : '');
@@ -902,7 +940,7 @@
     window.onload = function() {
       buildSlotsHTML();
       loadDayData();
-      checkNotifPermission();
+      updateNotifButtonUI();
       syncFromCloud();
     };
   </script>
