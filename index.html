@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Công Việc - Đồng Bộ Google Sheets</title>
+  <title>Lịch Công Việc & Chấm Điểm</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 60px; line-height: 1.5; }
@@ -62,7 +62,7 @@
     .quick-select { border: 1px solid #cbd5e1; background: #f8fafc; padding: 4px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #2563eb; outline: none; cursor: pointer; }
     .quick-select:hover { border-color: #2563eb; }
 
-    textarea.text-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 48px; outline: none; background: #fff; }
+    textarea.text-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 52px; outline: none; background: #fff; line-height: 1.5; }
     textarea.text-box:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
 
     /* Score buttons: 1, 0,5, 0 */
@@ -239,7 +239,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v5";
+    var storageKey = "routine_todo_score_db_v6";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -391,19 +391,24 @@
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
-    // Xử lý xuống dòng thật sự và tự động thêm "- " phía trước
+    // XỬ LÝ CHỌN MẪU: Tự động xuống dòng và thêm dấu gạch đầu dòng
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
       var target = document.getElementById('todo-' + index);
-      var curVal = target.value.trim();
+      
+      // Dọn dẹp bất kỳ chuỗi text "\n" nào còn sót lại thành ký tự xuống dòng thật
+      var raw = target.value.split(String.fromCharCode(92) + "n").join(String.fromCharCode(10)).trim();
+      
+      var newline = String.fromCharCode(10);
       var formattedItem = "- " + val;
 
-      if (curVal === "") {
+      if (raw === "") {
         target.value = formattedItem;
       } else {
-        target.value = curVal + "\\n" + formattedItem;
+        target.value = raw + newline + formattedItem;
       }
+      
       selectEl.value = "";
       onInputChanged(index);
     }
@@ -427,7 +432,8 @@
       var daySlots = appData[currentDate] || {};
       SLOTS.forEach(function(slot, index) {
         var item = daySlots[slot] || { todo: '', actual: '', score: 0 };
-        document.getElementById('todo-' + index).value = item.todo || '';
+        var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
+        document.getElementById('todo-' + index).value = cleanTodo;
         document.getElementById('actual-' + index).value = item.actual || '';
         updateScoreButtons(index, item.score);
       });
