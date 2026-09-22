@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lịch Công Việc - Đồng Bộ Google Sheets</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 60px; line-height: 1.5; }
+    
+    header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .header-btns { display: flex; align-items: center; gap: 8px; }
+    .btn-top { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-top:hover { background: #334155; }
+    .sync-status { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: 700; background: #334155; color: #94a3b8; }
+    .sync-active { background: #065f46; color: #a7f3d0; }
+    .sync-loading { background: #854d0e; color: #fef08a; }
+
+    .container { max-width: 1100px; margin: 14px auto; padding: 0 10px; }
+    
+    /* Tabs */
+    .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #cbd5e1; margin-bottom: 14px; }
+    .tab-btn { background: none; border: none; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+    /* Date Controller & Score Banner */
+    .top-panel { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .date-wrap { display: flex; align-items: center; gap: 8px; }
+    .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
+    input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
+    .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 700; }
+    
+    /* Result Banner */
+    .result-banner { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; border: 2px solid transparent; min-width: 260px; }
+    .res-green { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .res-orange { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+    .res-red { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .res-score { font-size: 26px; font-weight: 800; font-family: monospace; }
+    .res-title { font-size: 13px; font-weight: 800; text-transform: uppercase; }
+    .res-alert { font-size: 11px; font-weight: 700; text-decoration: underline; margin-top: 2px; }
+
+    /* Table & Rows */
+    .table-container { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .table-head { display: none; background: #f8fafc; padding: 12px 14px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+    @media (min-width: 768px) {
+      .table-head { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: center; }
+    }
+
+    .table-row { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; }
+    .table-row:last-child { border-bottom: none; }
+    @media (min-width: 768px) {
+      .table-row { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: start; }
+    }
+
+    .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; width: fit-content; color: #1e293b; }
+    
+    .input-col { display: flex; flex-direction: column; gap: 5px; }
+    .mobile-lbl { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+    @media (min-width: 768px) { .mobile-lbl { display: none; } }
+    
+    .quick-select { border: 1px solid #cbd5e1; background: #f8fafc; padding: 4px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #2563eb; outline: none; cursor: pointer; }
+    .quick-select:hover { border-color: #2563eb; }
+
+    textarea.text-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 48px; outline: none; background: #fff; }
+    textarea.text-box:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+
+    /* Score buttons: 1, 0,5, 0 */
+    .score-wrap { display: flex; gap: 4px; }
+    .sc-btn { flex: 1; border: 1px solid #cbd5e1; background: #f8fafc; padding: 8px 0; border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer; color: #475569; text-align: center; transition: all 0.15s; }
+    .sc-btn:hover { background: #e2e8f0; }
+    
+    .sc-btn.active-1 { background: #16a34a !important; color: #fff !important; border-color: #15803d !important; }
+    .sc-btn.active-05 { background: #ea580c !important; color: #fff !important; border-color: #c2410c !important; }
+    .sc-btn.active-0 { background: #dc2626 !important; color: #fff !important; border-color: #b91c1c !important; }
+
+    /* Dashboard Layout */
+    .filter-bar { background: #fff; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .filter-btn-group { display: flex; gap: 8px; }
+    .filter-btn { border: 1px solid #cbd5e1; background: #f8fafc; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .filter-btn.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .kpi-box { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #cbd5e1; }
+    .kpi-num { font-size: 24px; font-weight: 800; font-family: monospace; margin: 4px 0; }
+    .kpi-text { font-size: 12px; font-weight: 700; color: #64748b; }
+    
+    .panel-box { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; padding: 16px; margin-bottom: 14px; }
+    .panel-header { font-size: 15px; font-weight: 800; margin-bottom: 10px; color: #1e293b; }
+    .panel-body { font-size: 13px; line-height: 1.7; color: #334155; }
+    .advice-card { margin-top: 10px; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+    .adv-green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .adv-orange { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+    .adv-red { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+    .dash-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .dash-table th { background: #f8fafc; padding: 10px 12px; text-align: left; font-weight: 800; border-bottom: 2px solid #cbd5e1; color: #475569; }
+    .dash-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
+    .dash-badge { padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-title">📊 Lịch Công Việc & Đánh Giá</div>
+    <div class="header-btns">
+      <span id="syncIndicator" class="sync-status">Đang kiểm tra...</span>
+      <button onclick="configSyncUrl()" class="btn-top" title="Cài đặt link kết nối Google Sheets">⚙️ Cài Link Sheets</button>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- NAVIGATION TABS -->
+    <div class="nav-tabs">
+      <button onclick="switchTab('daily')" id="tab-daily" class="tab-btn active">📅 Lịch & Chấm Điểm Hằng Ngày</button>
+      <button onclick="switchTab('dashboard')" id="tab-dash" class="tab-btn">📊 Dashboard (Ngày / Tháng / Quý)</button>
+    </div>
+
+    <!-- VIEW 1: DAILY -->
+    <div id="view-daily">
+      <div class="top-panel">
+        <div class="date-wrap">
+          <button onclick="changeDay(-1)" class="date-btn">◀</button>
+          <input type="date" id="datePicker" onchange="onDateChange(this.value)">
+          <button onclick="changeDay(1)" class="date-btn">▶</button>
+          <span id="dayBadgeText" class="day-badge"></span>
+        </div>
+
+        <div id="resultBanner" class="result-banner res-red">
+          <div>
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase;">Kết quả thực hiện:</div>
+            <div id="resultLevelText" class="res-title">DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)</div>
+            <div id="resultAlertText" class="res-alert">⚠️ Cảnh báo: Hiệu suất thấp, cần cải thiện!</div>
+          </div>
+          <div id="resultScoreText" class="res-score">0.0 đ</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-head">
+          <div>Khung Giờ</div>
+          <div>To Do (Kế hoạch)</div>
+          <div>Thực Hiện (Kết quả)</div>
+          <div>Chấm Điểm</div>
+        </div>
+
+        <div id="slotsContainer"></div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: DASHBOARD -->
+    <div id="view-dashboard" style="display: none;">
+      <div class="filter-bar">
+        <div class="filter-btn-group">
+          <button onclick="setFilter('month')" id="f-month" class="filter-btn active">Theo Tháng Này</button>
+          <button onclick="setFilter('quarter')" id="f-quarter" class="filter-btn">Theo Quý Này</button>
+          <button onclick="setFilter('all')" id="f-all" class="filter-btn">Tất Cả Lịch Sử</button>
+        </div>
+        <div id="filterLabel" style="font-size: 13px; font-weight: 800; color: #1e293b;"></div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-box" style="border-top: 4px solid #2563eb;">
+          <div class="kpi-text">Số ngày có To Do</div>
+          <div class="kpi-num" id="totalDays" style="color: #2563eb;">0</div>
+        </div>
+        <div class="kpi-box" style="border-top: 4px solid #16a34a;">
+          <div class="kpi-text">Ngày Xanh (>= 8.0 đ)</div>
+          <div class="kpi-num" id="greenDays" style="color: #16a34a;">0</div>
+          <div style="font-size:11px; color:#16a34a; font-weight:700;">Xuất sắc / Đạt</div>
+        </div>
+        <div class="kpi-box" style="border-top: 4px solid #ea580c;">
+          <div class="kpi-text">Ngày Cam (6.0 - 7.5 đ)</div>
+          <div class="kpi-num" id="orangeDays" style="color: #ea580c;">0</div>
+          <div style="font-size:11px; color:#ea580c; font-weight:700;">Khá / Cần cố gắng</div>
+        </div>
+        <div class="kpi-box" style="border-top: 4px solid #dc2626;">
+          <div class="kpi-text">Ngày Đỏ (< 6.0 đ)</div>
+          <div class="kpi-num" id="redDays" style="color: #dc2626;">0</div>
+          <div style="font-size:11px; color:#dc2626; font-weight:700;">Cảnh báo hiệu suất</div>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-header">💡 Tự Động Phân Tích & Lời Khuyên Hành Động</div>
+        <div id="analysisContent" class="panel-body">Đang tải phân tích...</div>
+        <div id="adviceCard" class="advice-card adv-green">Lời khuyên...</div>
+      </div>
+
+      <div class="panel-box" style="padding: 0; overflow-x: auto;">
+        <div style="padding: 12px 16px; font-weight: 800; border-bottom: 1px solid #cbd5e1; font-size: 14px;">
+          📋 Danh sách chi tiết từng ngày
+        </div>
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th>Thứ</th>
+              <th>Số việc To Do</th>
+              <th>Điểm đạt</th>
+              <th>Đánh giá</th>
+            </tr>
+          </thead>
+          <tbody id="dashTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    var SLOTS = [
+      "08:00-09:00",
+      "09:00-10:00",
+      "10:00-11:00",
+      "11:00-11:30",
+      "14:00-15:00",
+      "15:00-16:00",
+      "16:00-17:00",
+      "20:00-21:00",
+      "21:00-22:00",
+      "22:00-23:00"
+    ];
+
+    var TODO_TEMPLATES = [
+      "Họp giao ban",
+      "Dạy ku học Toán",
+      "Dạy ku học Tiếng Anh",
+      "Cập nhật Sản lượng lên Big Data",
+      "Cập nhật doanh thu",
+      "Cập nhật KPI",
+      "Tập đàn",
+      "Chơi thể thao",
+      "Đọc truyện",
+      "Tình hình thị trường",
+      "Cập nhật tình hình tàu",
+      "Hiệu quả chuyến đi"
+    ];
+
+    var storageKey = "routine_todo_score_db_v4";
+    var syncUrlKey = "routine_google_sheets_url";
+    var appData = {};
+
+    try {
+      var saved = localStorage.getItem(storageKey);
+      if (saved) appData = JSON.parse(saved);
+    } catch(e) { appData = {}; }
+
+    function getTodayStr() {
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + d;
+    }
+
+    var currentDate = getTodayStr();
+    var currentFilter = "month";
+    var syncTimer = null;
+
+    function setSyncStatus(text, type) {
+      var el = document.getElementById('syncIndicator');
+      el.innerText = text;
+      el.className = 'sync-status ' + (type === 'ok' ? 'sync-active' : (type === 'loading' ? 'sync-loading' : ''));
+    }
+
+    function configSyncUrl() {
+      var curUrl = localStorage.getItem(syncUrlKey) || '';
+      var newUrl = prompt("Dán Web App URL của Google Apps Script vào đây (chỉ cần dán 1 lần duy nhất):", curUrl);
+      if (newUrl !== null) {
+        localStorage.setItem(syncUrlKey, newUrl.trim());
+        syncFromCloud();
+      }
+    }
+
+    function triggerCloudSave() {
+      var url = localStorage.getItem(syncUrlKey);
+      if (!url) {
+        setSyncStatus('Chưa nối Sheets', '');
+        return;
+      }
+
+      setSyncStatus('Đang lưu lên Sheets...', 'loading');
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(function() {
+        fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(appData)
+        })
+        .then(function(res) {
+          setSyncStatus('Đã đồng bộ Sheets', 'ok');
+        })
+        .catch(function(err) {
+          setSyncStatus('Lỗi mạng', '');
+        });
+      }, 1000);
+    }
+
+    function syncFromCloud() {
+      var url = localStorage.getItem(syncUrlKey);
+      if (!url) {
+        setSyncStatus('Chưa nối Sheets', '');
+        return;
+      }
+      setSyncStatus('Đang tải dữ liệu...', 'loading');
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(cloudData) {
+          if (cloudData && typeof cloudData === 'object' && Object.keys(cloudData).length > 0) {
+            appData = cloudData;
+            localStorage.setItem(storageKey, JSON.stringify(appData));
+            loadDayData();
+          }
+          setSyncStatus('Đã kết nối Sheets', 'ok');
+        })
+        .catch(function(err) {
+          setSyncStatus('Ngoại tuyến', '');
+        });
+    }
+
+    function saveAppData() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(appData));
+      } catch(e) {}
+      triggerCloudSave();
+    }
+
+    function switchTab(t) {
+      document.getElementById('view-daily').style.display = (t === 'daily') ? 'block' : 'none';
+      document.getElementById('view-dashboard').style.display = (t === 'dashboard') ? 'block' : 'none';
+      document.getElementById('tab-daily').className = 'tab-btn' + (t === 'daily' ? ' active' : '');
+      document.getElementById('tab-dash').className = 'tab-btn' + (t === 'dashboard' ? ' active' : '');
+      if (t === 'dashboard') renderDashboard();
+    }
+
+    function buildSlotsHTML() {
+      var container = document.getElementById('slotsContainer');
+      container.innerHTML = '';
+
+      SLOTS.forEach(function(slot, index) {
+        var row = document.createElement('div');
+        row.className = 'table-row';
+        row.id = 'row-' + index;
+
+        var html = '<div class="time-col">' + slot + '</div>';
+
+        // Cột To Do
+        html += '<div class="input-col">';
+        html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
+        html += '<span class="mobile-lbl">To Do:</span>';
+        html += '<select class="quick-select" onchange="pickTodoTemplate(' + index + ', this)">';
+        html += '<option value="">+ Mẫu To Do nhanh...</option>';
+        TODO_TEMPLATES.forEach(function(item) {
+          html += '<option value="' + escapeAttr(item) + '">' + item + '</option>';
+        });
+        html += '</select>';
+        html += '</div>';
+        html += '<textarea class="text-box" id="todo-' + index + '" placeholder="Điền việc cần làm..." oninput="onInputChanged(' + index + ')"></textarea>';
+        html += '</div>';
+
+        // Cột Thực hiện
+        html += '<div class="input-col">';
+        html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
+        html += '<span class="mobile-lbl">Thực hiện:</span>';
+        html += '<select class="quick-select" onchange="pickActualTemplate(' + index + ', this)">';
+        html += '<option value="">+ Chọn nhanh kết quả...</option>';
+        html += '<option value="Đã thực hiện">Đã thực hiện</option>';
+        html += '<option value="Chưa thực hiện vì lý do sau: ">Chưa thực hiện vì lý do sau: ...</option>';
+        html += '<option value="Đang làm">Đang làm</option>';
+        html += '</select>';
+        html += '</div>';
+        html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
+        html += '</div>';
+
+        // Cột Chấm điểm: 1, 0,5, 0
+        html += '<div class="input-col">';
+        html += '<span class="mobile-lbl">Chấm điểm:</span>';
+        html += '<div class="score-wrap">';
+        html += '<button type="button" class="sc-btn" id="sc-' + index + '-1" onclick="setRowScore(' + index + ', 1)">1</button>';
+        html += '<button type="button" class="sc-btn" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
+        html += '<button type="button" class="sc-btn" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
+        html += '</div>';
+        html += '</div>';
+
+        row.innerHTML = html;
+        container.appendChild(row);
+      });
+    }
+
+    function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
+
+    function pickTodoTemplate(index, selectEl) {
+      var val = selectEl.value;
+      if (!val) return;
+      var curVal = document.getElementById('todo-' + index).value.trim();
+      document.getElementById('todo-' + index).value = (curVal === '') ? val : (curVal + "\\n- " + val);
+      selectEl.value = "";
+      onInputChanged(index);
+    }
+
+    function pickActualTemplate(index, selectEl) {
+      var val = selectEl.value;
+      if (!val) return;
+      var target = document.getElementById('actual-' + index);
+      target.value = val;
+      target.focus();
+      selectEl.value = "";
+      onInputChanged(index);
+    }
+
+    function loadDayData() {
+      document.getElementById('datePicker').value = currentDate;
+      var d = new Date(currentDate);
+      var days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+      document.getElementById('dayBadgeText').innerText = days[d.getDay()] || '';
+
+      var daySlots = appData[currentDate] || {};
+      SLOTS.forEach(function(slot, index) {
+        var item = daySlots[slot] || { todo: '', actual: '', score: 0 };
+        document.getElementById('todo-' + index).value = item.todo || '';
+        document.getElementById('actual-' + index).value = item.actual || '';
+        updateScoreButtons(index, item.score);
+      });
+      updateDayScoreDisplay();
+    }
+
+    function updateScoreButtons(index, scoreVal) {
+      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : null;
+      document.getElementById('sc-' + index + '-1').className = 'sc-btn' + (s === 1 ? ' active-1' : '');
+      document.getElementById('sc-' + index + '-05').className = 'sc-btn' + (s === 0.5 ? ' active-05' : '');
+      document.getElementById('sc-' + index + '-0').className = 'sc-btn' + (s === 0 ? ' active-0' : '');
+    }
+
+    function onInputChanged(index) {
+      var slot = SLOTS[index];
+      var todoVal = document.getElementById('todo-' + index).value;
+      var actualVal = document.getElementById('actual-' + index).value;
+
+      if (!appData[currentDate]) appData[currentDate] = {};
+      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0 };
+
+      appData[currentDate][slot].todo = todoVal;
+      appData[currentDate][slot].actual = actualVal;
+
+      saveAppData();
+      updateDayScoreDisplay();
+    }
+
+    function setRowScore(index, scoreVal) {
+      var slot = SLOTS[index];
+      var todoVal = document.getElementById('todo-' + index).value;
+      var actualVal = document.getElementById('actual-' + index).value;
+
+      if (!appData[currentDate]) appData[currentDate] = {};
+      appData[currentDate][slot] = { todo: todoVal, actual: actualVal, score: scoreVal };
+
+      updateScoreButtons(index, scoreVal);
+      saveAppData();
+      updateDayScoreDisplay();
+    }
+
+    function updateDayScoreDisplay() {
+      var daySlots = appData[currentDate] || {};
+      var totalScore = 0;
+      var todoCount = 0;
+
+      SLOTS.forEach(function(slot) {
+        var item = daySlots[slot];
+        if (item && item.todo && item.todo.trim() !== '') {
+          todoCount++;
+          var s = parseFloat(item.score);
+          if (!isNaN(s)) totalScore += s;
+        }
+      });
+
+      var banner = document.getElementById('resultBanner');
+      var lvlText = document.getElementById('resultLevelText');
+      var alertText = document.getElementById('resultAlertText');
+      var scoreText = document.getElementById('resultScoreText');
+
+      scoreText.innerText = totalScore.toFixed(1) + ' đ';
+
+      banner.className = 'result-banner ';
+      if (totalScore >= 8.0) {
+        banner.className += 'res-green';
+        lvlText.innerText = 'TỪ 8 ĐIỂM TRỞ LÊN (XUẤT SẮC)';
+        alertText.style.display = 'none';
+      } else if (totalScore >= 6.0) {
+        banner.className += 'res-orange';
+        lvlText.innerText = 'TỪ 6 ĐẾN DƯỚI 8 ĐIỂM (CẦN CỐ GẮNG)';
+        alertText.style.display = 'none';
+      } else {
+        banner.className += 'res-red';
+        lvlText.innerText = 'DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)';
+        alertText.style.display = 'block';
+      }
+    }
+
+    function changeDay(delta) {
+      var d = new Date(currentDate);
+      d.setDate(d.getDate() + delta);
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      currentDate = y + '-' + m + '-' + day;
+      loadDayData();
+    }
+
+    function onDateChange(val) {
+      if (val) {
+        currentDate = val;
+        loadDayData();
+      }
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.getElementById('f-month').className = 'filter-btn ' + (f === 'month' ? 'active' : '');
+      document.getElementById('f-quarter').className = 'filter-btn ' + (f === 'quarter' ? 'active' : '');
+      document.getElementById('f-all').className = 'filter-btn ' + (f === 'all' ? 'active' : '');
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      var allDates = Object.keys(appData).sort();
+      var curD = new Date(currentDate);
+      var y = curD.getFullYear();
+      var m = curD.getMonth();
+      var q = Math.floor(m / 3) + 1;
+
+      var filterLabel = '';
+      var filteredDates = [];
+
+      if (currentFilter === 'month') {
+        filterLabel = 'Tháng ' + (m + 1) + '/' + y;
+        filteredDates = allDates.filter(function(d) {
+          var dt = new Date(d);
+          return dt.getFullYear() === y && dt.getMonth() === m;
+        });
+      } else if (currentFilter === 'quarter') {
+        filterLabel = 'Quý ' + q + '/' + y + ' (Tháng ' + ((q-1)*3 + 1) + ' - ' + (q*3) + ')';
+        filteredDates = allDates.filter(function(d) {
+          var dt = new Date(d);
+          var dq = Math.floor(dt.getMonth() / 3) + 1;
+          return dt.getFullYear() === y && dq === q;
+        });
+      } else {
+        filterLabel = 'Toàn bộ lịch sử';
+        filteredDates = allDates;
+      }
+
+      document.getElementById('filterLabel').innerText = filterLabel;
+
+      var greenCount = 0;
+      var orangeCount = 0;
+      var redCount = 0;
+      var totalActiveDays = 0;
+      var scoreSum = 0;
+      var rows = [];
+
+      filteredDates.forEach(function(dStr) {
+        var daySlots = appData[dStr] || {};
+        var dayScore = 0;
+        var todoCount = 0;
+
+        SLOTS.forEach(function(slot) {
+          var it = daySlots[slot];
+          if (it && it.todo && it.todo.trim() !== '') {
+            todoCount++;
+            var s = parseFloat(it.score);
+            if (!isNaN(s)) dayScore += s;
+          }
+        });
+
+        if (todoCount > 0) {
+          totalActiveDays++;
+          scoreSum += dayScore;
+
+          var st = '';
+          var colorClass = '';
+          if (dayScore >= 8.0) {
+            greenCount++;
+            st = 'Xanh (>=8đ)';
+            colorClass = 'res-green';
+          } else if (dayScore >= 6.0) {
+            orangeCount++;
+            st = 'Cam (6-8đ)';
+            colorClass = 'res-orange';
+          } else {
+            redCount++;
+            st = 'Đỏ (<6đ)';
+            colorClass = 'res-red';
+          }
+
+          var dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][new Date(dStr).getDay()];
+          rows.push({
+            date: dStr,
+            day: dayName,
+            todoCount: todoCount,
+            score: dayScore,
+            status: st,
+            colorClass: colorClass
+          });
+        }
+      });
+
+      document.getElementById('totalDays').innerText = totalActiveDays;
+      document.getElementById('greenDays').innerText = greenCount;
+      document.getElementById('orangeDays').innerText = orangeCount;
+      document.getElementById('redDays').innerText = redCount;
+
+      var analysisEl = document.getElementById('analysisContent');
+      var adviceEl = document.getElementById('adviceCard');
+
+      if (totalActiveDays === 0) {
+        analysisEl.innerHTML = 'Chưa có ngày nào có công việc To Do trong giai đoạn <strong>' + filterLabel + '</strong>.';
+        adviceEl.className = 'advice-card adv-orange';
+        adviceEl.innerText = '💡 Hãy quay lại tab "Lịch & Chấm Điểm Hằng Ngày" để điền To Do cho ngày hôm nay!';
+      } else {
+        var avg = (scoreSum / totalActiveDays).toFixed(1);
+        var gPct = Math.round((greenCount / totalActiveDays) * 100);
+        var rPct = Math.round((redCount / totalActiveDays) * 100);
+
+        var txt = '<p>Trong <strong>' + filterLabel + '</strong>, bạn đã theo dõi <strong>' + totalActiveDays + ' ngày</strong> có kế hoạch làm việc:</p>';
+        txt += '<p>• Điểm số trung bình: <strong>' + avg + ' / 10 điểm</strong>.</p>';
+        txt += '<p>• Số ngày đạt Xanh (>=8đ): <strong>' + greenCount + ' ngày</strong> (' + gPct + '%).</p>';
+        txt += '<p>• Số ngày Cam (6 - dưới 8đ): <strong>' + orangeCount + ' ngày</strong>.</p>';
+        txt += '<p>• Số ngày Đỏ cảnh báo (<6đ): <strong>' + redCount + ' ngày</strong> (' + rPct + '%).</p>';
+
+        analysisEl.innerHTML = txt;
+
+        if (gPct >= 70 && redCount === 0) {
+          adviceEl.className = 'advice-card adv-green';
+          adviceEl.innerHTML = '🌟 <strong>Khen ngợi:</strong> Hiệu suất làm việc cực kỳ xuất sắc và kỷ luật! Bạn duy trì các khung giờ rất ổn định. Tiếp tục phát huy nhé!';
+        } else if (gPct >= 50) {
+          adviceEl.className = 'advice-card adv-orange';
+          adviceEl.innerHTML = '⚠️ <strong>Lời khuyên:</strong> Phong độ đạt mức Khá nhưng chưa thật sự đồng đều, vẫn còn ngày bị tụt điểm (Đỏ/Cam). Hãy rà soát lại các khung giờ tối (20:00-23:00) hoặc buổi chiều để tránh bị việc đột xuất làm gãy mạch công việc.';
+        } else {
+          adviceEl.className = 'advice-card adv-red';
+          adviceEl.innerHTML = '🚨 <strong>CẢNH BÁO:</strong> Tỷ lệ ngày Đỏ chiếm khá cao (' + rPct + '%). Nhiều công việc bị dở dang hoặc chưa thực hiện. <strong>Lời khuyên:</strong> Đừng lên kế hoạch quá dàn trải cả 10 khung giờ. Hãy ưu tiên tập trung dứt điểm 6-8 đầu việc thực sự quan trọng trước để nâng cao tỷ lệ 1 điểm!';
+        }
+      }
+
+      var tbody = document.getElementById('dashTableBody');
+      tbody.innerHTML = '';
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">Chưa có dữ liệu.</td></tr>';
+      } else {
+        rows.reverse().forEach(function(r) {
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td><strong>' + r.date + '</strong></td>' +
+                         '<td>' + r.day + '</td>' +
+                         '<td>' + r.todoCount + ' khung giờ</td>' +
+                         '<td><strong style="font-family:monospace; font-size:14px;">' + r.score.toFixed(1) + ' đ</strong></td>' +
+                         '<td><span class="dash-badge ' + r.colorClass + '">' + r.status + '</span></td>';
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    window.onload = function() {
+      buildSlotsHTML();
+      loadDayData();
+      syncFromCloud();
+    };
+  </script>
+</body>
+</html>
