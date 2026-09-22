@@ -6,9 +6,9 @@
   <title>Lịch Công Việc & Đánh Giá</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
     
-    header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
+    header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .header-btns { display: flex; align-items: center; gap: 8px; }
     .btn-top { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -25,7 +25,7 @@
     .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
     /* Date Controller & Quick Result Button */
-    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .date-wrap { display: flex; align-items: center; gap: 8px; }
     .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
     input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
@@ -35,43 +35,46 @@
     .btn-view-result:hover { background: #2563eb; color: #fff; }
 
     /* Section Blocks (Sáng / Chiều / Tối) */
-    .session-card { background: #fff; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 18px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .session-card { background: #fff; border-radius: 12px; border: 2px solid #cbd5e1; margin-bottom: 22px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
     
-    .session-title-bar { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; }
-    .session-morning { background: linear-gradient(to right, #eff6ff, #f8fafc); border-left: 5px solid #3b82f6; }
-    .session-afternoon { background: linear-gradient(to right, #fefce8, #f8fafc); border-left: 5px solid #eab308; }
-    .session-evening { background: linear-gradient(to right, #faf5ff, #f8fafc); border-left: 5px solid #8b5cf6; }
+    .session-title-bar { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #cbd5e1; }
+    .session-morning { background: linear-gradient(to right, #eff6ff, #f8fafc); border-left: 6px solid #2563eb; }
+    .session-afternoon { background: linear-gradient(to right, #fefce8, #f8fafc); border-left: 6px solid #d97706; }
+    .session-evening { background: linear-gradient(to right, #faf5ff, #f8fafc); border-left: 6px solid #7c3aed; }
     
-    .session-label { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-    .session-sub { font-size: 12px; color: #64748b; font-weight: 600; }
+    .session-label { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .session-sub { font-size: 12px; color: #64748b; font-weight: 700; }
 
-    /* Table & Rows */
-    .table-head { display: none; background: #f8fafc; padding: 10px 14px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
+    /* Table Header */
+    .table-head { display: none; background: #f1f5f9; padding: 10px 16px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
     @media (min-width: 768px) {
-      .table-head { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: center; }
+      .table-head { display: grid; grid-template-columns: 125px 1fr 1fr 130px; gap: 14px; align-items: center; }
     }
 
-    .table-row { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; background: #fff; }
+    /* GẠCH PHÂN TÁCH GIỮA CÁC KHUNG GIỜ ĐẬM VÀ RÕ NÉT */
+    .table-row { padding: 14px 16px; border-bottom: 2px solid #cbd5e1; display: flex; flex-direction: column; gap: 10px; background: #fff; transition: background 0.15s; }
+    .table-row:nth-child(even) { background: #fafcff; }
+    .table-row:hover { background: #f0f7ff; }
     .table-row:last-child { border-bottom: none; }
     @media (min-width: 768px) {
-      .table-row { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: start; }
+      .table-row { display: grid; grid-template-columns: 125px 1fr 1fr 130px; gap: 14px; align-items: start; }
     }
 
-    .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 6px; width: fit-content; color: #1e293b; }
+    .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #e2e8f0; border: 1.5px solid #94a3b8; padding: 6px 10px; border-radius: 6px; width: fit-content; color: #0f172a; }
     
     .input-col { display: flex; flex-direction: column; gap: 5px; }
-    .mobile-lbl { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+    .mobile-lbl { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; }
     @media (min-width: 768px) { .mobile-lbl { display: none; } }
     
-    .quick-select { border: 1px solid #cbd5e1; background: #f8fafc; padding: 4px 6px; border-radius: 6px; font-size: 11px; font-weight: 600; color: #2563eb; outline: none; cursor: pointer; }
-    .quick-select:hover { border-color: #2563eb; }
+    .quick-select { border: 1px solid #94a3b8; background: #fff; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #1d4ed8; outline: none; cursor: pointer; }
+    .quick-select:hover { border-color: #1d4ed8; background: #eff6ff; }
 
-    textarea.text-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 52px; outline: none; background: #fff; line-height: 1.5; }
+    textarea.text-box { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 52px; outline: none; background: #fff; line-height: 1.5; }
     textarea.text-box:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
 
     /* Score buttons: 1, 0,5, 0 */
     .score-wrap { display: flex; gap: 4px; }
-    .sc-btn { flex: 1; border: 1px solid #cbd5e1; background: #f8fafc; padding: 8px 0; border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer; color: #475569; text-align: center; transition: all 0.15s; }
+    .sc-btn { flex: 1; border: 1.5px solid #cbd5e1; background: #f8fafc; padding: 8px 0; border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer; color: #475569; text-align: center; transition: all 0.15s; }
     .sc-btn:hover { background: #e2e8f0; }
     
     .sc-btn.active-1 { background: #16a34a !important; color: #fff !important; border-color: #15803d !important; }
@@ -153,7 +156,7 @@
         </button>
       </div>
 
-      <!-- PHÂN TÁCH 3 KHỐI KHUNG GIỜ RÕ RÀNG -->
+      <!-- PHÂN TÁCH 3 BUỔI CÓ GẠCH VÀ BỐ CỤC RÕ RÀNG -->
 
       <!-- 1. BUỔI SÁNG -->
       <div class="session-card">
@@ -324,7 +327,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v8";
+    var storageKey = "routine_todo_score_db_v9";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
