@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Công Việc & Đánh Giá</title>
+  <title>Lịch Công Việc & Nhắc Nhở Điện Thoại</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f1f5f9; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
@@ -48,20 +48,25 @@
     /* Table Header */
     .table-head { display: none; background: #f1f5f9; padding: 10px 16px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
     @media (min-width: 768px) {
-      .table-head { display: grid; grid-template-columns: 125px 1fr 1fr 130px; gap: 14px; align-items: center; }
+      .table-head { display: grid; grid-template-columns: 140px 1fr 1fr 130px; gap: 14px; align-items: center; }
     }
 
-    /* GẠCH PHÂN TÁCH GIỮA CÁC KHUNG GIỜ ĐẬM VÀ RÕ NÉT */
+    /* Gạch phân tách giữa các khung giờ đậm và rõ nét */
     .table-row { padding: 14px 16px; border-bottom: 2px solid #cbd5e1; display: flex; flex-direction: column; gap: 10px; background: #fff; transition: background 0.15s; }
     .table-row:nth-child(even) { background: #fafcff; }
     .table-row:hover { background: #f0f7ff; }
     .table-row:last-child { border-bottom: none; }
     @media (min-width: 768px) {
-      .table-row { display: grid; grid-template-columns: 125px 1fr 1fr 130px; gap: 14px; align-items: start; }
+      .table-row { display: grid; grid-template-columns: 140px 1fr 1fr 130px; gap: 14px; align-items: start; }
     }
 
+    .time-wrap { display: flex; flex-direction: column; gap: 6px; }
     .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #e2e8f0; border: 1.5px solid #94a3b8; padding: 6px 10px; border-radius: 6px; width: fit-content; color: #0f172a; }
     
+    /* Nút hẹn giờ chuông báo thức điện thoại */
+    .btn-reminder { background: #fef3c7; border: 1px solid #f59e0b; color: #b45309; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; width: fit-content; transition: 0.15s; }
+    .btn-reminder:hover { background: #f59e0b; color: #fff; }
+
     .input-col { display: flex; flex-direction: column; gap: 5px; }
     .mobile-lbl { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; }
     @media (min-width: 768px) { .mobile-lbl { display: none; } }
@@ -125,7 +130,7 @@
 
   <!-- HEADER -->
   <header>
-    <div class="header-title">📊 Lịch Công Việc & Đánh Giá</div>
+    <div class="header-title">📊 Lịch Công Việc & Nhắc Nhở</div>
     <div class="header-btns">
       <span id="syncIndicator" class="sync-status">Đang nạp...</span>
       <button onclick="configSyncUrl()" class="btn-top" title="Cài đặt link kết nối Google Sheets">⚙️ Cài Link Sheets</button>
@@ -295,15 +300,28 @@
     var SESSIONS = [
       {
         id: "slotsMorning",
-        slots: ["08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-11:30"]
+        slots: [
+          { time: "08:00-09:00", start: "08:00", end: "09:00" },
+          { time: "09:00-10:00", start: "09:00", end: "10:00" },
+          { time: "10:00-11:00", start: "10:00", end: "11:00" },
+          { time: "11:00-11:30", start: "11:00", end: "11:30" }
+        ]
       },
       {
         id: "slotsAfternoon",
-        slots: ["14:00-15:00", "15:00-16:00", "16:00-17:00"]
+        slots: [
+          { time: "14:00-15:00", start: "14:00", end: "15:00" },
+          { time: "15:00-16:00", start: "15:00", end: "16:00" },
+          { time: "16:00-17:00", start: "16:00", end: "17:00" }
+        ]
       },
       {
         id: "slotsEvening",
-        slots: ["20:00-21:00", "21:00-22:00", "22:00-23:00"]
+        slots: [
+          { time: "20:00-21:00", start: "20:00", end: "21:00" },
+          { time: "21:00-22:00", start: "21:00", end: "22:00" },
+          { time: "22:00-23:00", start: "22:00", end: "23:00" }
+        ]
       }
     ];
 
@@ -327,7 +345,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v9";
+    var storageKey = "routine_todo_score_db_v10";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -426,13 +444,17 @@
         var container = document.getElementById(sess.id);
         container.innerHTML = '';
 
-        sess.slots.forEach(function(slot) {
+        sess.slots.forEach(function(slotObj) {
           var index = globalIndex++;
+          var slot = slotObj.time;
           var row = document.createElement('div');
           row.className = 'table-row';
           row.id = 'row-' + index;
 
-          var html = '<div class="time-col">' + slot + '</div>';
+          var html = '<div class="time-wrap">';
+          html += '<div class="time-col">' + slot + '</div>';
+          html += '<button type="button" onclick="setPhoneReminder(' + index + ')" class="btn-reminder" title="Đặt chuông nhắc nhở qua lịch điện thoại">🔔 Hẹn giờ</button>';
+          html += '</div>';
 
           // Cột To Do
           html += '<div class="input-col">';
@@ -480,6 +502,35 @@
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
+    // HẸN GIỜ QUA LỊCH ĐIỆN THOẠI (1 CHẠM TỰ BẬT CHUÔNG BÁO THỨC)
+    function setPhoneReminder(index) {
+      var slotObj = ALL_SLOTS[index];
+      var todoText = document.getElementById('todo-' + index).value.trim();
+      if (!todoText) {
+        alert("Vui lòng điền nội dung việc cần làm vào ô 'To Do' trước khi hẹn giờ!");
+        return;
+      }
+
+      var title = "Nhắc việc: " + todoText.split('\n')[0].replace(/^-\s*/, '');
+      var details = "Kế hoạch công việc:\n" + todoText;
+
+      var dateParts = currentDate.split('-');
+      var y = dateParts[0];
+      var m = dateParts[1];
+      var d = dateParts[2];
+      
+      var startH = slotObj.start.replace(':', '') + '00';
+      var endH = slotObj.end.replace(':', '') + '00';
+      var dates = y + m + d + 'T' + startH + '/' + y + m + d + 'T' + endH;
+
+      var googleCalUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+        "&text=" + encodeURIComponent(title) +
+        "&dates=" + dates +
+        "&details=" + encodeURIComponent(details);
+
+      window.open(googleCalUrl, '_blank');
+    }
+
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
@@ -516,7 +567,8 @@
       document.getElementById('dayBadgeText').innerText = days[d.getDay()] || '';
 
       var daySlots = appData[currentDate] || {};
-      ALL_SLOTS.forEach(function(slot, index) {
+      ALL_SLOTS.forEach(function(slotObj, index) {
+        var slot = slotObj.time;
         var item = daySlots[slot] || { todo: '', actual: '', score: 0.5 };
         var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
         document.getElementById('todo-' + index).value = cleanTodo;
@@ -535,7 +587,7 @@
     }
 
     function onInputChanged(index) {
-      var slot = ALL_SLOTS[index];
+      var slot = ALL_SLOTS[index].time;
       var todoVal = document.getElementById('todo-' + index).value;
       var actualVal = document.getElementById('actual-' + index).value;
 
@@ -549,7 +601,7 @@
     }
 
     function setRowScore(index, scoreVal) {
-      var slot = ALL_SLOTS[index];
+      var slot = ALL_SLOTS[index].time;
       var todoVal = document.getElementById('todo-' + index).value;
       var actualVal = document.getElementById('actual-' + index).value;
 
@@ -568,7 +620,8 @@
       var count05 = 0;
       var count0 = 0;
 
-      ALL_SLOTS.forEach(function(slot) {
+      ALL_SLOTS.forEach(function(slotObj) {
+        var slot = slotObj.time;
         var item = daySlots[slot];
         if (item && item.todo && item.todo.trim() !== '') {
           todoCount++;
@@ -683,7 +736,8 @@
         var dayScore = 0;
         var todoCount = 0;
 
-        ALL_SLOTS.forEach(function(slot) {
+        ALL_SLOTS.forEach(function(slotObj) {
+          var slot = slotObj.time;
           var it = daySlots[slot];
           if (it && it.todo && it.todo.trim() !== '') {
             todoCount++;
