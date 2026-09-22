@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lịch Công Việc & Chấm Điểm</title>
+  <title>Lịch Công Việc & Đánh Giá</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 60px; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; padding-bottom: 70px; line-height: 1.5; }
     
-    header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.12); }
     .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     .header-btns { display: flex; align-items: center; gap: 8px; }
     .btn-top { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -17,7 +17,7 @@
     .sync-active { background: #065f46; color: #a7f3d0; }
     .sync-loading { background: #854d0e; color: #fef08a; }
 
-    .container { max-width: 1100px; margin: 14px auto; padding: 0 10px; }
+    .container { max-width: 1100px; margin: 14px auto; padding: 0 12px; }
     
     /* Tabs */
     .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #cbd5e1; margin-bottom: 14px; }
@@ -25,39 +25,33 @@
     .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
     /* Date Controller & Quick Result Button */
-    .top-panel { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .top-panel { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .date-wrap { display: flex; align-items: center; gap: 8px; }
     .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
     input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
-    .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 700; }
+    .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; }
     
-    /* Nút Xem Kết Quả Thực Hiện */
     .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
     .btn-view-result:hover { background: #2563eb; color: #fff; }
 
-    /* Modal hiển thị kết quả thực hiện khi bấm vào */
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
-    .modal-box { background: #fff; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
-    .modal-head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
-    .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #64748b; }
+    /* Section Blocks (Sáng / Chiều / Tối) */
+    .session-card { background: #fff; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 18px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
     
-    .res-card-content { padding: 18px; border-radius: 12px; text-align: center; margin-bottom: 14px; border: 2px solid transparent; }
-    .res-card-green { background: #dcfce7; border-color: #22c55e; color: #15803d; }
-    .res-card-orange { background: #ffedd5; border-color: #f97316; color: #c2410c; }
-    .res-card-red { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
-    .res-modal-score { font-size: 38px; font-weight: 900; font-family: monospace; margin: 4px 0; }
-    .res-modal-title { font-size: 15px; font-weight: 800; text-transform: uppercase; }
-    .res-modal-alert { font-size: 12px; font-weight: 700; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.7); display: inline-block; }
+    .session-title-bar { padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; }
+    .session-morning { background: linear-gradient(to right, #eff6ff, #f8fafc); border-left: 5px solid #3b82f6; }
+    .session-afternoon { background: linear-gradient(to right, #fefce8, #f8fafc); border-left: 5px solid #eab308; }
+    .session-evening { background: linear-gradient(to right, #faf5ff, #f8fafc); border-left: 5px solid #8b5cf6; }
+    
+    .session-label { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .session-sub { font-size: 12px; color: #64748b; font-weight: 600; }
 
     /* Table & Rows */
-    .table-container { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .table-head { display: none; background: #f8fafc; padding: 12px 14px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
+    .table-head { display: none; background: #f8fafc; padding: 10px 14px; font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
     @media (min-width: 768px) {
       .table-head { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: center; }
     }
 
-    .table-row { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; }
+    .table-row { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px; background: #fff; }
     .table-row:last-child { border-bottom: none; }
     @media (min-width: 768px) {
       .table-row { display: grid; grid-template-columns: 120px 1fr 1fr 130px; gap: 12px; align-items: start; }
@@ -83,6 +77,21 @@
     .sc-btn.active-1 { background: #16a34a !important; color: #fff !important; border-color: #15803d !important; }
     .sc-btn.active-05 { background: #ea580c !important; color: #fff !important; border-color: #c2410c !important; }
     .sc-btn.active-0 { background: #dc2626 !important; color: #fff !important; border-color: #b91c1c !important; }
+
+    /* Modal Popup */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: #fff; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    .modal-head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #64748b; }
+    
+    .res-card-content { padding: 18px; border-radius: 12px; text-align: center; margin-bottom: 14px; border: 2px solid transparent; }
+    .res-card-green { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .res-card-orange { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+    .res-card-red { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .res-modal-score { font-size: 38px; font-weight: 900; font-family: monospace; margin: 4px 0; }
+    .res-modal-title { font-size: 15px; font-weight: 800; text-transform: uppercase; }
+    .res-modal-alert { font-size: 12px; font-weight: 700; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.7); display: inline-block; }
 
     /* Dashboard Layout */
     .filter-bar { background: #fff; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -130,6 +139,7 @@
 
     <!-- VIEW 1: DAILY -->
     <div id="view-daily">
+      <!-- DATE BAR & VIEW RESULT BUTTON -->
       <div class="top-panel">
         <div class="date-wrap">
           <button onclick="changeDay(-1)" class="date-btn">◀</button>
@@ -138,22 +148,64 @@
           <span id="dayBadgeText" class="day-badge"></span>
         </div>
 
-        <!-- Ô BẤM XEM KẾT QUẢ THỰC HIỆN -->
         <button onclick="openResultModal()" class="btn-view-result">
           👁️ Xem kết quả thực hiện
         </button>
       </div>
 
-      <div class="table-container">
+      <!-- PHÂN TÁCH 3 KHỐI KHUNG GIỜ RÕ RÀNG -->
+
+      <!-- 1. BUỔI SÁNG -->
+      <div class="session-card">
+        <div class="session-title-bar session-morning">
+          <div class="session-label">
+            <span>🌅 BUỔI SÁNG</span>
+          </div>
+          <div class="session-sub">4 khung giờ (08:00 - 11:30)</div>
+        </div>
         <div class="table-head">
           <div>Khung Giờ</div>
           <div>To Do (Kế hoạch)</div>
           <div>Thực Hiện (Kết quả)</div>
           <div>Chấm Điểm</div>
         </div>
-
-        <div id="slotsContainer"></div>
+        <div id="slotsMorning"></div>
       </div>
+
+      <!-- 2. BUỔI CHIỀU -->
+      <div class="session-card">
+        <div class="session-title-bar session-afternoon">
+          <div class="session-label">
+            <span>☀️ BUỔI CHIỀU</span>
+          </div>
+          <div class="session-sub">3 khung giờ (14:00 - 17:00)</div>
+        </div>
+        <div class="table-head">
+          <div>Khung Giờ</div>
+          <div>To Do (Kế hoạch)</div>
+          <div>Thực Hiện (Kết quả)</div>
+          <div>Chấm Điểm</div>
+        </div>
+        <div id="slotsAfternoon"></div>
+      </div>
+
+      <!-- 3. BUỔI TỐI -->
+      <div class="session-card">
+        <div class="session-title-bar session-evening">
+          <div class="session-label">
+            <span>🌙 BUỔI TỐI</span>
+          </div>
+          <div class="session-sub">3 khung giờ (20:00 - 23:00)</div>
+        </div>
+        <div class="table-head">
+          <div>Khung Giờ</div>
+          <div>To Do (Kế hoạch)</div>
+          <div>Thực Hiện (Kết quả)</div>
+          <div>Chấm Điểm</div>
+        </div>
+        <div id="slotsEvening"></div>
+      </div>
+
     </div>
 
     <!-- VIEW 2: DASHBOARD -->
@@ -237,18 +289,25 @@
   </div>
 
   <script>
-    var SLOTS = [
-      "08:00-09:00",
-      "09:00-10:00",
-      "10:00-11:00",
-      "11:00-11:30",
-      "14:00-15:00",
-      "15:00-16:00",
-      "16:00-17:00",
-      "20:00-21:00",
-      "21:00-22:00",
-      "22:00-23:00"
+    var SESSIONS = [
+      {
+        id: "slotsMorning",
+        slots: ["08:00-09:00", "09:00-10:00", "10:00-11:00", "11:00-11:30"]
+      },
+      {
+        id: "slotsAfternoon",
+        slots: ["14:00-15:00", "15:00-16:00", "16:00-17:00"]
+      },
+      {
+        id: "slotsEvening",
+        slots: ["20:00-21:00", "21:00-22:00", "22:00-23:00"]
+      }
     ];
+
+    var ALL_SLOTS = [];
+    SESSIONS.forEach(function(sess) {
+      sess.slots.forEach(function(s) { ALL_SLOTS.push(s); });
+    });
 
     var TODO_TEMPLATES = [
       "Họp giao ban",
@@ -265,7 +324,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v7";
+    var storageKey = "routine_todo_score_db_v8";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -358,56 +417,61 @@
     }
 
     function buildSlotsHTML() {
-      var container = document.getElementById('slotsContainer');
-      container.innerHTML = '';
+      var globalIndex = 0;
 
-      SLOTS.forEach(function(slot, index) {
-        var row = document.createElement('div');
-        row.className = 'table-row';
-        row.id = 'row-' + index;
+      SESSIONS.forEach(function(sess) {
+        var container = document.getElementById(sess.id);
+        container.innerHTML = '';
 
-        var html = '<div class="time-col">' + slot + '</div>';
+        sess.slots.forEach(function(slot) {
+          var index = globalIndex++;
+          var row = document.createElement('div');
+          row.className = 'table-row';
+          row.id = 'row-' + index;
 
-        // Cột To Do
-        html += '<div class="input-col">';
-        html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
-        html += '<span class="mobile-lbl">To Do:</span>';
-        html += '<select class="quick-select" onchange="pickTodoTemplate(' + index + ', this)">';
-        html += '<option value="">+ Mẫu To Do nhanh...</option>';
-        TODO_TEMPLATES.forEach(function(item) {
-          html += '<option value="' + escapeAttr(item) + '">' + item + '</option>';
+          var html = '<div class="time-col">' + slot + '</div>';
+
+          // Cột To Do
+          html += '<div class="input-col">';
+          html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
+          html += '<span class="mobile-lbl">To Do:</span>';
+          html += '<select class="quick-select" onchange="pickTodoTemplate(' + index + ', this)">';
+          html += '<option value="">+ Mẫu To Do nhanh...</option>';
+          TODO_TEMPLATES.forEach(function(item) {
+            html += '<option value="' + escapeAttr(item) + '">' + item + '</option>';
+          });
+          html += '</select>';
+          html += '</div>';
+          html += '<textarea class="text-box" id="todo-' + index + '" placeholder="Điền việc cần làm..." oninput="onInputChanged(' + index + ')"></textarea>';
+          html += '</div>';
+
+          // Cột Thực hiện
+          html += '<div class="input-col">';
+          html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
+          html += '<span class="mobile-lbl">Thực hiện:</span>';
+          html += '<select class="quick-select" onchange="pickActualTemplate(' + index + ', this)">';
+          html += '<option value="">+ Chọn nhanh kết quả...</option>';
+          html += '<option value="Đã thực hiện">Đã thực hiện</option>';
+          html += '<option value="Chưa thực hiện vì lý do sau: ">Chưa thực hiện vì lý do sau: ...</option>';
+          html += '<option value="Đang làm">Đang làm</option>';
+          html += '</select>';
+          html += '</div>';
+          html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
+          html += '</div>';
+
+          // Cột Chấm điểm: 1, 0,5, 0 (Mặc định 0,5)
+          html += '<div class="input-col">';
+          html += '<span class="mobile-lbl">Chấm điểm:</span>';
+          html += '<div class="score-wrap">';
+          html += '<button type="button" class="sc-btn" id="sc-' + index + '-1" onclick="setRowScore(' + index + ', 1)">1</button>';
+          html += '<button type="button" class="sc-btn active-05" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
+          html += '<button type="button" class="sc-btn" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
+          html += '</div>';
+          html += '</div>';
+
+          row.innerHTML = html;
+          container.appendChild(row);
         });
-        html += '</select>';
-        html += '</div>';
-        html += '<textarea class="text-box" id="todo-' + index + '" placeholder="Điền việc cần làm..." oninput="onInputChanged(' + index + ')"></textarea>';
-        html += '</div>';
-
-        // Cột Thực hiện
-        html += '<div class="input-col">';
-        html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
-        html += '<span class="mobile-lbl">Thực hiện:</span>';
-        html += '<select class="quick-select" onchange="pickActualTemplate(' + index + ', this)">';
-        html += '<option value="">+ Chọn nhanh kết quả...</option>';
-        html += '<option value="Đã thực hiện">Đã thực hiện</option>';
-        html += '<option value="Chưa thực hiện vì lý do sau: ">Chưa thực hiện vì lý do sau: ...</option>';
-        html += '<option value="Đang làm">Đang làm</option>';
-        html += '</select>';
-        html += '</div>';
-        html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
-        html += '</div>';
-
-        // Cột Chấm điểm: 1, 0,5, 0 (Mặc định 0,5)
-        html += '<div class="input-col">';
-        html += '<span class="mobile-lbl">Chấm điểm:</span>';
-        html += '<div class="score-wrap">';
-        html += '<button type="button" class="sc-btn" id="sc-' + index + '-1" onclick="setRowScore(' + index + ', 1)">1</button>';
-        html += '<button type="button" class="sc-btn active-05" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
-        html += '<button type="button" class="sc-btn" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
-        html += '</div>';
-        html += '</div>';
-
-        row.innerHTML = html;
-        container.appendChild(row);
       });
     }
 
@@ -449,7 +513,7 @@
       document.getElementById('dayBadgeText').innerText = days[d.getDay()] || '';
 
       var daySlots = appData[currentDate] || {};
-      SLOTS.forEach(function(slot, index) {
+      ALL_SLOTS.forEach(function(slot, index) {
         var item = daySlots[slot] || { todo: '', actual: '', score: 0.5 };
         var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
         document.getElementById('todo-' + index).value = cleanTodo;
@@ -468,7 +532,7 @@
     }
 
     function onInputChanged(index) {
-      var slot = SLOTS[index];
+      var slot = ALL_SLOTS[index];
       var todoVal = document.getElementById('todo-' + index).value;
       var actualVal = document.getElementById('actual-' + index).value;
 
@@ -482,7 +546,7 @@
     }
 
     function setRowScore(index, scoreVal) {
-      var slot = SLOTS[index];
+      var slot = ALL_SLOTS[index];
       var todoVal = document.getElementById('todo-' + index).value;
       var actualVal = document.getElementById('actual-' + index).value;
 
@@ -493,7 +557,6 @@
       saveAppData();
     }
 
-    // MODAL XEM KẾT QUẢ THỰC HIỆN
     function openResultModal() {
       var daySlots = appData[currentDate] || {};
       var totalScore = 0;
@@ -502,7 +565,7 @@
       var count05 = 0;
       var count0 = 0;
 
-      SLOTS.forEach(function(slot) {
+      ALL_SLOTS.forEach(function(slot) {
         var item = daySlots[slot];
         if (item && item.todo && item.todo.trim() !== '') {
           todoCount++;
@@ -567,7 +630,6 @@
       }
     }
 
-    // DASHBOARD & PHÂN TÍCH
     function setFilter(f) {
       currentFilter = f;
       document.getElementById('f-month').className = 'filter-btn ' + (f === 'month' ? 'active' : '');
@@ -618,7 +680,7 @@
         var dayScore = 0;
         var todoCount = 0;
 
-        SLOTS.forEach(function(slot) {
+        ALL_SLOTS.forEach(function(slot) {
           var it = daySlots[slot];
           if (it && it.todo && it.todo.trim() !== '') {
             todoCount++;
