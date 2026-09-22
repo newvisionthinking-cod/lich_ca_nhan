@@ -24,21 +24,31 @@
     .tab-btn { background: none; border: none; padding: 10px 14px; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
     .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
 
-    /* Date Controller & Score Banner */
+    /* Date Controller & Quick Result Button */
     .top-panel { background: #fff; border-radius: 10px; padding: 14px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .date-wrap { display: flex; align-items: center; gap: 8px; }
     .date-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; width: 34px; height: 34px; font-weight: bold; cursor: pointer; }
     input[type="date"] { border: 1px solid #94a3b8; padding: 6px 10px; border-radius: 6px; font-size: 14px; font-weight: bold; color: #0f172a; outline: none; background: #fff; }
     .day-badge { background: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 700; }
     
-    /* Result Banner */
-    .result-banner { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 8px; border: 2px solid transparent; min-width: 260px; }
-    .res-green { background: #dcfce7; border-color: #22c55e; color: #15803d; }
-    .res-orange { background: #ffedd5; border-color: #f97316; color: #c2410c; }
-    .res-red { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
-    .res-score { font-size: 26px; font-weight: 800; font-family: monospace; }
-    .res-title { font-size: 13px; font-weight: 800; text-transform: uppercase; }
-    .res-alert { font-size: 11px; font-weight: 700; text-decoration: underline; margin-top: 2px; }
+    /* Nút Xem Kết Quả Thực Hiện */
+    .btn-view-result { background: #eff6ff; border: 1.5px solid #2563eb; color: #1d4ed8; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .btn-view-result:hover { background: #2563eb; color: #fff; }
+
+    /* Modal hiển thị kết quả thực hiện khi bấm vào */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-box { background: #fff; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    .modal-head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+    .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #64748b; }
+    
+    .res-card-content { padding: 18px; border-radius: 12px; text-align: center; margin-bottom: 14px; border: 2px solid transparent; }
+    .res-card-green { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    .res-card-orange { background: #ffedd5; border-color: #f97316; color: #c2410c; }
+    .res-card-red { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .res-modal-score { font-size: 38px; font-weight: 900; font-family: monospace; margin: 4px 0; }
+    .res-modal-title { font-size: 15px; font-weight: 800; text-transform: uppercase; }
+    .res-modal-alert { font-size: 12px; font-weight: 700; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.7); display: inline-block; }
 
     /* Table & Rows */
     .table-container { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -105,7 +115,7 @@
   <header>
     <div class="header-title">📊 Lịch Công Việc & Đánh Giá</div>
     <div class="header-btns">
-      <span id="syncIndicator" class="sync-status">Đang kiểm tra...</span>
+      <span id="syncIndicator" class="sync-status">Đang nạp...</span>
       <button onclick="configSyncUrl()" class="btn-top" title="Cài đặt link kết nối Google Sheets">⚙️ Cài Link Sheets</button>
     </div>
   </header>
@@ -128,14 +138,10 @@
           <span id="dayBadgeText" class="day-badge"></span>
         </div>
 
-        <div id="resultBanner" class="result-banner res-red">
-          <div>
-            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase;">Kết quả thực hiện:</div>
-            <div id="resultLevelText" class="res-title">DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)</div>
-            <div id="resultAlertText" class="res-alert">⚠️ Cảnh báo: Hiệu suất thấp, cần cải thiện!</div>
-          </div>
-          <div id="resultScoreText" class="res-score">0.0 đ</div>
-        </div>
+        <!-- Ô BẤM XEM KẾT QUẢ THỰC HIỆN -->
+        <button onclick="openResultModal()" class="btn-view-result">
+          👁️ Xem kết quả thực hiện
+        </button>
       </div>
 
       <div class="table-container">
@@ -210,6 +216,26 @@
 
   </div>
 
+  <!-- POPUP MODAL HIỂN THỊ KẾT QUẢ THỰC HIỆN -->
+  <div id="resultModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-title">Kết Quả Thực Hiện Trong Ngày</div>
+        <button onclick="closeResultModal()" class="modal-close">&times;</button>
+      </div>
+      
+      <div id="modalCardContent" class="res-card-content res-card-green">
+        <div id="modalCardLevel" class="res-modal-title">XUẤT SẮC (ĐẠT CHUẨN)</div>
+        <div id="modalCardScore" class="res-modal-score">0.0 đ</div>
+        <div id="modalCardAlert" class="res-modal-alert" style="display:none;">⚠️ Cảnh báo: Dưới 6 điểm, hiệu suất kém!</div>
+      </div>
+
+      <div id="modalStatsBreakdown" style="font-size: 13px; color: #475569; line-height: 1.8; margin-bottom: 16px; padding: 0 4px;"></div>
+
+      <button onclick="closeResultModal()" style="width: 100%; padding: 10px; background: #0f172a; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Đóng</button>
+    </div>
+  </div>
+
   <script>
     var SLOTS = [
       "08:00-09:00",
@@ -239,7 +265,7 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v6";
+    var storageKey = "routine_todo_score_db_v7";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -278,23 +304,19 @@
     function triggerCloudSave() {
       var url = localStorage.getItem(syncUrlKey);
       if (!url) {
-        setSyncStatus('Chưa nối Sheets', '');
+        setSyncStatus('Lưu máy', '');
         return;
       }
 
-      setSyncStatus('Đang lưu lên Sheets...', 'loading');
+      setSyncStatus('Đang lưu Sheets...', 'loading');
       clearTimeout(syncTimer);
       syncTimer = setTimeout(function() {
         fetch(url, {
           method: 'POST',
           body: JSON.stringify(appData)
         })
-        .then(function(res) {
-          setSyncStatus('Đã đồng bộ Sheets', 'ok');
-        })
-        .catch(function(err) {
-          setSyncStatus('Lỗi mạng', '');
-        });
+        .then(function(res) { setSyncStatus('Đã đồng bộ', 'ok'); })
+        .catch(function(err) { setSyncStatus('Lỗi mạng', ''); });
       }, 1000);
     }
 
@@ -304,7 +326,7 @@
         setSyncStatus('Chưa nối Sheets', '');
         return;
       }
-      setSyncStatus('Đang tải dữ liệu...', 'loading');
+      setSyncStatus('Đang nạp...', 'loading');
       fetch(url)
         .then(function(res) { return res.json(); })
         .then(function(cloudData) {
@@ -313,7 +335,7 @@
             localStorage.setItem(storageKey, JSON.stringify(appData));
             loadDayData();
           }
-          setSyncStatus('Đã kết nối Sheets', 'ok');
+          setSyncStatus('Đã nối Sheets', 'ok');
         })
         .catch(function(err) {
           setSyncStatus('Ngoại tuyến', '');
@@ -374,12 +396,12 @@
         html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
         html += '</div>';
 
-        // Cột Chấm điểm: 1, 0,5, 0
+        // Cột Chấm điểm: 1, 0,5, 0 (Mặc định 0,5)
         html += '<div class="input-col">';
         html += '<span class="mobile-lbl">Chấm điểm:</span>';
         html += '<div class="score-wrap">';
         html += '<button type="button" class="sc-btn" id="sc-' + index + '-1" onclick="setRowScore(' + index + ', 1)">1</button>';
-        html += '<button type="button" class="sc-btn" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
+        html += '<button type="button" class="sc-btn active-05" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
         html += '<button type="button" class="sc-btn" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
         html += '</div>';
         html += '</div>';
@@ -391,15 +413,12 @@
 
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
-    // XỬ LÝ CHỌN MẪU: Tự động xuống dòng và thêm dấu gạch đầu dòng
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
       var target = document.getElementById('todo-' + index);
       
-      // Dọn dẹp bất kỳ chuỗi text "\n" nào còn sót lại thành ký tự xuống dòng thật
       var raw = target.value.split(String.fromCharCode(92) + "n").join(String.fromCharCode(10)).trim();
-      
       var newline = String.fromCharCode(10);
       var formattedItem = "- " + val;
 
@@ -431,17 +450,18 @@
 
       var daySlots = appData[currentDate] || {};
       SLOTS.forEach(function(slot, index) {
-        var item = daySlots[slot] || { todo: '', actual: '', score: 0 };
+        var item = daySlots[slot] || { todo: '', actual: '', score: 0.5 };
         var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
         document.getElementById('todo-' + index).value = cleanTodo;
         document.getElementById('actual-' + index).value = item.actual || '';
-        updateScoreButtons(index, item.score);
+        
+        var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0.5;
+        updateScoreButtons(index, s);
       });
-      updateDayScoreDisplay();
     }
 
     function updateScoreButtons(index, scoreVal) {
-      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : null;
+      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : 0.5;
       document.getElementById('sc-' + index + '-1').className = 'sc-btn' + (s === 1 ? ' active-1' : '');
       document.getElementById('sc-' + index + '-05').className = 'sc-btn' + (s === 0.5 ? ' active-05' : '');
       document.getElementById('sc-' + index + '-0').className = 'sc-btn' + (s === 0 ? ' active-0' : '');
@@ -453,13 +473,12 @@
       var actualVal = document.getElementById('actual-' + index).value;
 
       if (!appData[currentDate]) appData[currentDate] = {};
-      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0 };
+      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0.5 };
 
       appData[currentDate][slot].todo = todoVal;
       appData[currentDate][slot].actual = actualVal;
 
       saveAppData();
-      updateDayScoreDisplay();
     }
 
     function setRowScore(index, scoreVal) {
@@ -472,44 +491,63 @@
 
       updateScoreButtons(index, scoreVal);
       saveAppData();
-      updateDayScoreDisplay();
     }
 
-    function updateDayScoreDisplay() {
+    // MODAL XEM KẾT QUẢ THỰC HIỆN
+    function openResultModal() {
       var daySlots = appData[currentDate] || {};
       var totalScore = 0;
       var todoCount = 0;
+      var count1 = 0;
+      var count05 = 0;
+      var count0 = 0;
 
       SLOTS.forEach(function(slot) {
         var item = daySlots[slot];
         if (item && item.todo && item.todo.trim() !== '') {
           todoCount++;
-          var s = parseFloat(item.score);
-          if (!isNaN(s)) totalScore += s;
+          var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0.5;
+          totalScore += s;
+          if (s === 1) count1++;
+          else if (s === 0.5) count05++;
+          else count0++;
         }
       });
 
-      var banner = document.getElementById('resultBanner');
-      var lvlText = document.getElementById('resultLevelText');
-      var alertText = document.getElementById('resultAlertText');
-      var scoreText = document.getElementById('resultScoreText');
+      var card = document.getElementById('modalCardContent');
+      var lvl = document.getElementById('modalCardLevel');
+      var sc = document.getElementById('modalCardScore');
+      var al = document.getElementById('modalCardAlert');
+      var bk = document.getElementById('modalStatsBreakdown');
 
-      scoreText.innerText = totalScore.toFixed(1) + ' đ';
+      sc.innerText = totalScore.toFixed(1) + " đ";
 
-      banner.className = 'result-banner ';
+      card.className = "res-card-content ";
       if (totalScore >= 8.0) {
-        banner.className += 'res-green';
-        lvlText.innerText = 'TỪ 8 ĐIỂM TRỞ LÊN (XUẤT SẮC)';
-        alertText.style.display = 'none';
+        card.className += "res-card-green";
+        lvl.innerText = "TỪ 8 ĐIỂM TRỞ LÊN (XUẤT SẮC)";
+        al.style.display = "none";
       } else if (totalScore >= 6.0) {
-        banner.className += 'res-orange';
-        lvlText.innerText = 'TỪ 6 ĐẾN DƯỚI 8 ĐIỂM (CẦN CỐ GẮNG)';
-        alertText.style.display = 'none';
+        card.className += "res-card-orange";
+        lvl.innerText = "TỪ 6 ĐẾN DƯỚI 8 ĐIỂM (CẦN CỐ GẮNG)";
+        al.style.display = "none";
       } else {
-        banner.className += 'res-red';
-        lvlText.innerText = 'DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)';
-        alertText.style.display = 'block';
+        card.className += "res-card-red";
+        lvl.innerText = "DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)";
+        al.style.display = "inline-block";
       }
+
+      bk.innerHTML = "<div>• Ngày đánh giá: <strong>" + currentDate + "</strong></div>" +
+                     "<div>• Số khung giờ có việc To Do: <strong>" + todoCount + " / 10</strong></div>" +
+                     "<div>• Hoàn thành hết (1 điểm): <strong>" + count1 + " việc</strong></div>" +
+                     "<div>• Làm được 1/2 (0.5 điểm): <strong>" + count05 + " việc</strong></div>" +
+                     "<div>• Không làm (0 điểm): <strong>" + count0 + " việc</strong></div>";
+
+      document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function closeResultModal() {
+      document.getElementById('resultModal').style.display = 'none';
     }
 
     function changeDay(delta) {
@@ -529,6 +567,7 @@
       }
     }
 
+    // DASHBOARD & PHÂN TÍCH
     function setFilter(f) {
       currentFilter = f;
       document.getElementById('f-month').className = 'filter-btn ' + (f === 'month' ? 'active' : '');
@@ -583,8 +622,8 @@
           var it = daySlots[slot];
           if (it && it.todo && it.todo.trim() !== '') {
             todoCount++;
-            var s = parseFloat(it.score);
-            if (!isNaN(s)) dayScore += s;
+            var s = (it.score !== undefined && it.score !== null) ? parseFloat(it.score) : 0.5;
+            dayScore += s;
           }
         });
 
@@ -597,15 +636,15 @@
           if (dayScore >= 8.0) {
             greenCount++;
             st = 'Xanh (>=8đ)';
-            colorClass = 'res-green';
+            colorClass = 'dash-badge res-card-green';
           } else if (dayScore >= 6.0) {
             orangeCount++;
             st = 'Cam (6-8đ)';
-            colorClass = 'res-orange';
+            colorClass = 'dash-badge res-card-orange';
           } else {
             redCount++;
             st = 'Đỏ (<6đ)';
-            colorClass = 'res-red';
+            colorClass = 'dash-badge res-card-red';
           }
 
           var dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][new Date(dStr).getDay()];
@@ -668,7 +707,7 @@
                          '<td>' + r.day + '</td>' +
                          '<td>' + r.todoCount + ' khung giờ</td>' +
                          '<td><strong style="font-family:monospace; font-size:14px;">' + r.score.toFixed(1) + ' đ</strong></td>' +
-                         '<td><span class="dash-badge ' + r.colorClass + '">' + r.status + '</span></td>';
+                         '<td><span class="' + r.colorClass + '">' + r.status + '</span></td>';
           tbody.appendChild(tr);
         });
       }
