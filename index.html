@@ -80,7 +80,7 @@
     textarea.text-box { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 52px; outline: none; background: #fff; line-height: 1.5; }
     textarea.text-box:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
 
-    /* Score buttons: 1, 0,5, 0 */
+    /* Score buttons: 1, 0,5, 0 (Mặc định 0 điểm màu đỏ) */
     .score-wrap { display: flex; gap: 4px; }
     .sc-btn { flex: 1; border: 1.5px solid #cbd5e1; background: #f8fafc; padding: 8px 0; border-radius: 6px; font-size: 13px; font-weight: 800; cursor: pointer; color: #475569; text-align: center; transition: all 0.15s; }
     .sc-btn:hover { background: #e2e8f0; }
@@ -373,7 +373,7 @@
       if (savedTemplates) customTemplates = JSON.parse(savedTemplates);
     } catch(e) { customTemplates = []; }
 
-    var storageKey = "routine_todo_score_db_v22";
+    var storageKey = "routine_todo_score_db_v25";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -519,7 +519,7 @@
           html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
           html += '</div>';
 
-          // Cột Chấm điểm: MẶC ĐỊNH BẬT NÚT 0 ĐIỂM (active-0)
+          // Cột Chấm điểm: MẶC ĐỊNH LUÔN LUÔN BẬT NÚT 0 ĐIỂM (active-0)
           html += '<div class="input-col">';
           html += '<span class="mobile-lbl">Chấm điểm:</span>';
           html += '<div class="score-wrap">';
@@ -708,14 +708,23 @@
         document.getElementById('todo-' + index).value = cleanTodo;
         document.getElementById('actual-' + index).value = item.actual || '';
         
-        var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0;
+        var s = 0;
+        if (item.score !== undefined && item.score !== null) {
+          var parsed = parseFloat(item.score);
+          if (!isNaN(parsed)) s = parsed;
+        }
+        
         updateScoreButtons(index, s);
         updateSlotNotifButton(index, item.notify === true);
       });
     }
 
     function updateScoreButtons(index, scoreVal) {
-      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : 0;
+      var s = 0;
+      if (scoreVal !== undefined && scoreVal !== null) {
+        var parsed = parseFloat(scoreVal);
+        if (!isNaN(parsed)) s = parsed;
+      }
       document.getElementById('sc-' + index + '-1').className = 'sc-btn' + (s === 1 ? ' active-1' : '');
       document.getElementById('sc-' + index + '-05').className = 'sc-btn' + (s === 0.5 ? ' active-05' : '');
       document.getElementById('sc-' + index + '-0').className = 'sc-btn' + (s === 0 ? ' active-0' : '');
@@ -727,10 +736,22 @@
       var actualVal = document.getElementById('actual-' + index).value;
 
       if (!appData[currentDate]) appData[currentDate] = {};
-      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0, notify: false };
+      
+      var existingScore = 0;
+      var existingNotify = false;
+      if (appData[currentDate][slot]) {
+        if (appData[currentDate][slot].score !== undefined && appData[currentDate][slot].score !== null) {
+          existingScore = parseFloat(appData[currentDate][slot].score) || 0;
+        }
+        existingNotify = (appData[currentDate][slot].notify === true);
+      }
 
-      appData[currentDate][slot].todo = todoVal;
-      appData[currentDate][slot].actual = actualVal;
+      appData[currentDate][slot] = {
+        todo: todoVal,
+        actual: actualVal,
+        score: existingScore,
+        notify: existingNotify
+      };
 
       saveAppData();
     }
@@ -741,10 +762,13 @@
       var actualVal = document.getElementById('actual-' + index).value;
       var notifyVal = (appData[currentDate] && appData[currentDate][slot] && appData[currentDate][slot].notify === true);
 
-      if (!appData[currentDate]) appData[currentDate] = {};
-      appData[currentDate][slot] = { todo: todoVal, actual: actualVal, score: scoreVal, notify: notifyVal };
+      var safeScore = parseFloat(scoreVal);
+      if (isNaN(safeScore)) safeScore = 0;
 
-      updateScoreButtons(index, scoreVal);
+      if (!appData[currentDate]) appData[currentDate] = {};
+      appData[currentDate][slot] = { todo: todoVal, actual: actualVal, score: safeScore, notify: notifyVal };
+
+      updateScoreButtons(index, safeScore);
       saveAppData();
     }
 
@@ -760,7 +784,11 @@
         var item = daySlots[slot];
         if (item && item.todo && item.todo.trim() !== '') {
           todoCount++;
-          var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0;
+          var s = 0;
+          if (item.score !== undefined && item.score !== null) {
+            var parsed = parseFloat(item.score);
+            if (!isNaN(parsed)) s = parsed;
+          }
           totalScore += s;
           if (s === 1) count1++;
           else if (s === 0.5) count05++;
@@ -875,7 +903,11 @@
           var it = daySlots[slot];
           if (it && it.todo && it.todo.trim() !== '') {
             todoCount++;
-            var s = (it.score !== undefined && it.score !== null) ? parseFloat(it.score) : 0;
+            var s = 0;
+            if (it.score !== undefined && it.score !== null) {
+              var parsed = parseFloat(it.score);
+              if (!isNaN(parsed)) s = parsed;
+            }
             dayScore += s;
           }
         });
