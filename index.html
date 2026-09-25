@@ -10,7 +10,7 @@
     
     header { background: #0f172a; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
     .header-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .header-btns { display: flex; align-items: center; gap: 8px; }
+    .header-btns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .btn-top { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .btn-top:hover { background: #334155; }
     
@@ -66,7 +66,7 @@
     .time-wrap { display: flex; flex-direction: column; gap: 8px; }
     .time-col { font-family: monospace; font-size: 13px; font-weight: 800; background: #e2e8f0; border: 1.5px solid #94a3b8; padding: 6px 10px; border-radius: 6px; width: fit-content; color: #0f172a; }
     
-    /* Nút Báo giờ này (Chọn lọc từng khung giờ) */
+    /* Nút Báo giờ này */
     .btn-slot-notif { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; width: fit-content; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #64748b; transition: all 0.15s; }
     .btn-slot-notif.active { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
 
@@ -89,9 +89,9 @@
     .sc-btn.active-05 { background: #ea580c !important; color: #fff !important; border-color: #c2410c !important; }
     .sc-btn.active-0 { background: #dc2626 !important; color: #fff !important; border-color: #b91c1c !important; }
 
-    /* Modal Popup */
+    /* Modal Popup Kết Quả */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
-    .modal-box { background: #fff; width: 100%; max-width: 420px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    .modal-box { background: #fff; width: 100%; max-width: 440px; border-radius: 14px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
     .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
     .modal-head-title { font-size: 16px; font-weight: 800; color: #0f172a; }
     .modal-close { border: none; background: none; font-size: 22px; cursor: pointer; color: #64748b; }
@@ -103,6 +103,11 @@
     .res-modal-score { font-size: 38px; font-weight: 900; font-family: monospace; margin: 4px 0; }
     .res-modal-title { font-size: 15px; font-weight: 800; text-transform: uppercase; }
     .res-modal-alert { font-size: 12px; font-weight: 700; margin-top: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.7); display: inline-block; }
+
+    /* Template Manager Modal List */
+    .template-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 6px; background: #f8fafc; font-size: 13px; font-weight: 600; }
+    .btn-del-template { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .btn-del-template:hover { background: #fee2e2; }
 
     /* Dashboard */
     .filter-bar { background: #fff; padding: 12px 14px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -136,6 +141,7 @@
     <div class="header-title">📊 Lịch Công Việc & Đánh Giá</div>
     <div class="header-btns">
       <span id="syncIndicator" class="sync-status">Đang nạp...</span>
+      <button onclick="openTemplateManager()" class="btn-top" title="Tạo & quản lý mẫu To Do">📝 Mẫu To Do</button>
       <button onclick="configSyncUrl()" class="btn-top" title="Cài đặt link kết nối Google Sheets">⚙️ Cài Link Sheets</button>
     </div>
   </header>
@@ -289,15 +295,38 @@
         <button onclick="closeResultModal()" class="modal-close">&times;</button>
       </div>
       
-      <div id="modalCardContent" class="res-card-content res-card-green">
-        <div id="modalCardLevel" class="res-modal-title">XUẤT SẮC (ĐẠT CHUẨN)</div>
+      <div id="modalCardContent" class="res-card-content res-card-red">
+        <div id="modalCardLevel" class="res-modal-title">DƯỚI 6 ĐIỂM (KHÔNG ĐẠT)</div>
         <div id="modalCardScore" class="res-modal-score">0.0 đ</div>
-        <div id="modalCardAlert" class="res-modal-alert" style="display:none;">⚠️ Cảnh báo: Dưới 6 điểm, hiệu suất kém!</div>
+        <div id="modalCardAlert" class="res-modal-alert">⚠️ Cảnh báo: Dưới 6 điểm, hiệu suất kém!</div>
       </div>
 
       <div id="modalStatsBreakdown" style="font-size: 13px; color: #475569; line-height: 1.8; margin-bottom: 16px; padding: 0 4px;"></div>
 
       <button onclick="closeResultModal()" style="width: 100%; padding: 10px; background: #0f172a; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Đóng</button>
+    </div>
+  </div>
+
+  <!-- POPUP MODAL QUẢN LÝ & TẠO MẪU TO DO MỚI -->
+  <div id="templateModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-head-title">📝 Quản Lý Mẫu To Do</div>
+        <button onclick="closeTemplateManager()" class="modal-close">&times;</button>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Thêm mẫu công việc mới:</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newTemplateInput" placeholder="Ví dụ: Kiểm tra tiến độ dự án..." style="flex: 1; border: 1.5px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; font-size: 13px; outline: none;">
+          <button onclick="addNewCustomTemplate()" style="background: #2563eb; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">+ Thêm</button>
+        </div>
+      </div>
+
+      <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Danh sách mẫu To Do hiện có:</div>
+      <div id="customTemplateList" style="max-height: 250px; overflow-y: auto; margin-bottom: 14px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;"></div>
+
+      <button onclick="closeTemplateManager()" style="width: 100%; padding: 10px; background: #0f172a; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;">Hoàn Tất</button>
     </div>
   </div>
 
@@ -322,7 +351,7 @@
       sess.slots.forEach(function(s) { ALL_SLOTS.push(s); });
     });
 
-    var TODO_TEMPLATES = [
+    var DEFAULT_TODO_TEMPLATES = [
       "Họp giao ban",
       "Dạy ku học Toán",
       "Dạy ku học Tiếng Anh",
@@ -337,7 +366,14 @@
       "Hiệu quả chuyến đi"
     ];
 
-    var storageKey = "routine_todo_score_db_v20";
+    var customTemplatesKey = "routine_custom_todo_templates_v1";
+    var customTemplates = [];
+    try {
+      var savedTemplates = localStorage.getItem(customTemplatesKey);
+      if (savedTemplates) customTemplates = JSON.parse(savedTemplates);
+    } catch(e) { customTemplates = []; }
+
+    var storageKey = "routine_todo_score_db_v22";
     var syncUrlKey = "routine_google_sheets_url";
     var appData = {};
 
@@ -358,6 +394,10 @@
     var currentFilter = "month";
     var syncTimer = null;
 
+    function getAllTodoTemplates() {
+      return DEFAULT_TODO_TEMPLATES.concat(customTemplates);
+    }
+
     function setSyncStatus(text, type) {
       var el = document.getElementById('syncIndicator');
       el.innerText = text;
@@ -373,7 +413,6 @@
       }
     }
 
-    // Tự động đẩy lên Google Sheets và Google Calendar khi có thay đổi
     function triggerCloudSave() {
       var url = localStorage.getItem(syncUrlKey);
       if (!url) {
@@ -384,6 +423,7 @@
       setSyncStatus('Đang lưu Sheets & Calendar...', 'loading');
       clearTimeout(syncTimer);
       syncTimer = setTimeout(function() {
+        appData["_custom_templates"] = customTemplates;
         fetch(url, {
           method: 'POST',
           body: JSON.stringify(appData)
@@ -405,6 +445,11 @@
         .then(function(cloudData) {
           if (cloudData && typeof cloudData === 'object' && Object.keys(cloudData).length > 0) {
             appData = cloudData;
+            if (Array.isArray(appData["_custom_templates"])) {
+              customTemplates = appData["_custom_templates"];
+              localStorage.setItem(customTemplatesKey, JSON.stringify(customTemplates));
+              refreshAllDropdowns();
+            }
             localStorage.setItem(storageKey, JSON.stringify(appData));
             loadDayData();
           }
@@ -417,6 +462,7 @@
 
     function saveAppData() {
       try {
+        appData["_custom_templates"] = customTemplates;
         localStorage.setItem(storageKey, JSON.stringify(appData));
       } catch(e) {}
       triggerCloudSave();
@@ -445,7 +491,6 @@
 
           var html = '<div class="time-wrap">';
           html += '<div class="time-col">' + slot + '</div>';
-          // Nút bật/tắt nhắc nhở cho từng khung giờ
           html += '<button type="button" id="notif-btn-' + index + '" onclick="toggleSlotReminder(' + index + ')" class="btn-slot-notif">📅 Báo giờ này</button>';
           html += '</div>';
 
@@ -453,11 +498,8 @@
           html += '<div class="input-col">';
           html += '<div style="display:flex; justify-content:space-between; align-items:center;">';
           html += '<span class="mobile-lbl">To Do:</span>';
-          html += '<select class="quick-select" onchange="pickTodoTemplate(' + index + ', this)">';
-          html += '<option value="">+ Mẫu To Do nhanh...</option>';
-          TODO_TEMPLATES.forEach(function(item) {
-            html += '<option value="' + escapeAttr(item) + '">' + item + '</option>';
-          });
+          html += '<select class="quick-select" id="select-todo-' + index + '" onchange="pickTodoTemplate(' + index + ', this)">';
+          html += generateTodoDropdownOptions();
           html += '</select>';
           html += '</div>';
           html += '<textarea class="text-box" id="todo-' + index + '" placeholder="Điền việc cần làm..." oninput="onInputChanged(' + index + ')"></textarea>';
@@ -477,13 +519,13 @@
           html += '<textarea class="text-box" id="actual-' + index + '" placeholder="Điền kết quả thực tế..." oninput="onInputChanged(' + index + ')"></textarea>';
           html += '</div>';
 
-          // Cột Chấm điểm: 1, 0,5, 0 (Mặc định 0,5)
+          // Cột Chấm điểm: MẶC ĐỊNH BẬT NÚT 0 ĐIỂM (active-0)
           html += '<div class="input-col">';
           html += '<span class="mobile-lbl">Chấm điểm:</span>';
           html += '<div class="score-wrap">';
           html += '<button type="button" class="sc-btn" id="sc-' + index + '-1" onclick="setRowScore(' + index + ', 1)">1</button>';
-          html += '<button type="button" class="sc-btn active-05" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
-          html += '<button type="button" class="sc-btn" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
+          html += '<button type="button" class="sc-btn" id="sc-' + index + '-05" onclick="setRowScore(' + index + ', 0.5)">0,5</button>';
+          html += '<button type="button" class="sc-btn active-0" id="sc-' + index + '-0" onclick="setRowScore(' + index + ', 0)">0</button>';
           html += '</div>';
           html += '</div>';
 
@@ -493,13 +535,101 @@
       });
     }
 
+    function generateTodoDropdownOptions() {
+      var allTpls = getAllTodoTemplates();
+      var opt = '<option value="">+ Mẫu To Do nhanh...</option>';
+      allTpls.forEach(function(item) {
+        opt += '<option value="' + escapeAttr(item) + '">' + item + '</option>';
+      });
+      opt += '<option value="__ADD_NEW__" style="font-weight:bold; color:#2563eb;">➕ [Tạo mẫu mới...]</option>';
+      return opt;
+    }
+
+    function refreshAllDropdowns() {
+      var opts = generateTodoDropdownOptions();
+      ALL_SLOTS.forEach(function(slot, index) {
+        var el = document.getElementById('select-todo-' + index);
+        if (el) el.innerHTML = opts;
+      });
+    }
+
     function escapeAttr(str) { return str.replace(/"/g, '&quot;'); }
 
-    // Bật / Tắt nhắc nhở cho từng khung giờ
+    function openTemplateManager() {
+      renderTemplateList();
+      document.getElementById('templateModal').style.display = 'flex';
+      setTimeout(function() {
+        document.getElementById('newTemplateInput').focus();
+      }, 100);
+    }
+
+    function closeTemplateManager() {
+      document.getElementById('templateModal').style.display = 'none';
+      document.getElementById('newTemplateInput').value = '';
+    }
+
+    function addNewCustomTemplate() {
+      var input = document.getElementById('newTemplateInput');
+      var val = input.value.trim();
+      if (!val) {
+        alert("Vui lòng nhập tên công việc cần làm mẫu!");
+        return;
+      }
+      var allTpls = getAllTodoTemplates();
+      if (allTpls.indexOf(val) !== -1) {
+        alert("Mẫu công việc này đã có sẵn trong danh sách!");
+        return;
+      }
+      customTemplates.push(val);
+      localStorage.setItem(customTemplatesKey, JSON.stringify(customTemplates));
+      input.value = '';
+      renderTemplateList();
+      refreshAllDropdowns();
+      saveAppData();
+    }
+
+    function deleteCustomTemplate(idx) {
+      if (confirm("Bạn có chắc chắn muốn xóa mẫu này khỏi danh sách?")) {
+        customTemplates.splice(idx, 1);
+        localStorage.setItem(customTemplatesKey, JSON.stringify(customTemplates));
+        renderTemplateList();
+        refreshAllDropdowns();
+        saveAppData();
+      }
+    }
+
+    function renderTemplateList() {
+      var listEl = document.getElementById('customTemplateList');
+      listEl.innerHTML = '';
+
+      DEFAULT_TODO_TEMPLATES.forEach(function(t) {
+        var div = document.createElement('div');
+        div.className = 'template-item';
+        div.innerHTML = '<span>• ' + t + '</span><span style="font-size:11px; color:#94a3b8; font-weight:normal;">(Mặc định)</span>';
+        listEl.appendChild(div);
+      });
+
+      if (customTemplates.length === 0) {
+        var emptyNotice = document.createElement('div');
+        emptyNotice.style.cssText = "font-size:12px; color:#94a3b8; text-align:center; padding:8px;";
+        emptyNotice.innerText = "Chưa có mẫu tự tạo nào. Hãy nhập ở trên để thêm!";
+        listEl.appendChild(emptyNotice);
+      } else {
+        customTemplates.forEach(function(t, idx) {
+          var div = document.createElement('div');
+          div.className = 'template-item';
+          div.style.background = '#eff6ff';
+          div.style.borderColor = '#bfdbfe';
+          div.innerHTML = '<span style="color:#1d4ed8;">⭐ ' + t + '</span><button type="button" class="btn-del-template" onclick="deleteCustomTemplate(' + idx + ')" title="Xóa mẫu này">&times; Xóa</button>';
+          listEl.appendChild(div);
+        });
+      }
+    }
+
     function toggleSlotReminder(index) {
       var slot = ALL_SLOTS[index];
       if (!appData[currentDate]) appData[currentDate] = {};
-      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0.5, notify: false };
+      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0, notify: false };
 
       var curState = appData[currentDate][slot].notify === true;
       appData[currentDate][slot].notify = !curState;
@@ -520,11 +650,10 @@
       }
     }
 
-    // Bật hoặc Tắt toàn bộ 10 khung giờ cùng lúc
     function toggleAllReminders(status) {
       if (!appData[currentDate]) appData[currentDate] = {};
       ALL_SLOTS.forEach(function(slot, index) {
-        if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0.5, notify: status };
+        if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0, notify: status };
         appData[currentDate][slot].notify = status;
         updateSlotNotifButton(index, status);
       });
@@ -534,8 +663,14 @@
     function pickTodoTemplate(index, selectEl) {
       var val = selectEl.value;
       if (!val) return;
+
+      if (val === "__ADD_NEW__") {
+        selectEl.value = "";
+        openTemplateManager();
+        return;
+      }
+
       var target = document.getElementById('todo-' + index);
-      
       var raw = target.value.split(String.fromCharCode(92) + "n").join(String.fromCharCode(10)).trim();
       var newline = String.fromCharCode(10);
       var formattedItem = "- " + val;
@@ -568,20 +703,19 @@
 
       var daySlots = appData[currentDate] || {};
       ALL_SLOTS.forEach(function(slot, index) {
-        // Mặc định 0.5 điểm
-        var item = daySlots[slot] || { todo: '', actual: '', score: 0.5, notify: false };
+        var item = daySlots[slot] || { todo: '', actual: '', score: 0, notify: false };
         var cleanTodo = (item.todo || '').split(String.fromCharCode(92) + "n").join(String.fromCharCode(10));
         document.getElementById('todo-' + index).value = cleanTodo;
         document.getElementById('actual-' + index).value = item.actual || '';
         
-        var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0.5;
+        var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0;
         updateScoreButtons(index, s);
         updateSlotNotifButton(index, item.notify === true);
       });
     }
 
     function updateScoreButtons(index, scoreVal) {
-      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : 0.5;
+      var s = (scoreVal !== undefined && scoreVal !== null) ? parseFloat(scoreVal) : 0;
       document.getElementById('sc-' + index + '-1').className = 'sc-btn' + (s === 1 ? ' active-1' : '');
       document.getElementById('sc-' + index + '-05').className = 'sc-btn' + (s === 0.5 ? ' active-05' : '');
       document.getElementById('sc-' + index + '-0').className = 'sc-btn' + (s === 0 ? ' active-0' : '');
@@ -593,7 +727,7 @@
       var actualVal = document.getElementById('actual-' + index).value;
 
       if (!appData[currentDate]) appData[currentDate] = {};
-      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0.5, notify: false };
+      if (!appData[currentDate][slot]) appData[currentDate][slot] = { todo: '', actual: '', score: 0, notify: false };
 
       appData[currentDate][slot].todo = todoVal;
       appData[currentDate][slot].actual = actualVal;
@@ -626,7 +760,7 @@
         var item = daySlots[slot];
         if (item && item.todo && item.todo.trim() !== '') {
           todoCount++;
-          var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0.5;
+          var s = (item.score !== undefined && item.score !== null) ? parseFloat(item.score) : 0;
           totalScore += s;
           if (s === 1) count1++;
           else if (s === 0.5) count05++;
@@ -687,7 +821,6 @@
       }
     }
 
-    // DASHBOARD & PHÂN TÍCH
     function setFilter(f) {
       currentFilter = f;
       document.getElementById('f-month').className = 'filter-btn ' + (f === 'month' ? 'active' : '');
@@ -697,7 +830,7 @@
     }
 
     function renderDashboard() {
-      var allDates = Object.keys(appData).sort();
+      var allDates = Object.keys(appData).filter(function(k) { return k !== "_custom_templates"; }).sort();
       var curD = new Date(currentDate);
       var y = curD.getFullYear();
       var m = curD.getMonth();
@@ -742,7 +875,7 @@
           var it = daySlots[slot];
           if (it && it.todo && it.todo.trim() !== '') {
             todoCount++;
-            var s = (it.score !== undefined && it.score !== null) ? parseFloat(it.score) : 0.5;
+            var s = (it.score !== undefined && it.score !== null) ? parseFloat(it.score) : 0;
             dayScore += s;
           }
         });
